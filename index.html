@@ -60,6 +60,14 @@ ul#fl button{border:0;background:#eef0f7;border-radius:6px;width:28px;height:28p
 #ifr{flex:1;width:100%;border:0}
 footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top:1px solid var(--line);background:#fff}
 </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2MPXSDJBBS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2MPXSDJBBS');
+</script>
 </head>
 <body>
 <div class="promo"><span>🚀 চাকরির আবেদন ফর্ম পূরণ করুন মাত্র ১-ক্লিকে স্বয়ংক্রিয়ভাবে!</span><a class="ext" href="#" target="_blank" rel="noopener">Chrome-এ যুক্ত করুন (ফ্রি)</a></div>
@@ -157,8 +165,10 @@ $('#tabs').onclick = e => { const b = e.target.closest('[data-k]'); if(b){ cat =
 $('#grid').onclick = e => { const c = e.target.closest('[data-id]'); if(c) openTool(c.dataset.id); };
 
 // ---------- সাধারণ হেল্পার ----------
+const track = (n, p) => { try { gtag('event', n, p); } catch(e){} };
 function msg(t, cls){ const s = $('#st'); s.className = cls||''; s.innerHTML = t; }
 function done(extra){
+  track('tool_success', {tool_name: cur});
   msg(`🎉 সম্পন্ন! ফাইল ডাউনলোড হয়েছে। ${extra||''}<br><small>💡 সরকারি-বেসরকারি চাকরির ফর্ম ১-ক্লিকে পূরণ করতে আমাদের ক্রোম এক্সটেনশন ব্যবহার করুন:</small><br><a class="btn-ext" href="${CHROME_URL}" target="_blank" rel="noopener">Chrome-এ যুক্ত করুন</a>`, 'ok');
 }
 function dl(data, name, type){
@@ -193,6 +203,63 @@ async function renderPages(file, scale, quality, onPage){
     c.width = c.height = 0;
   }
   return out.save();
+}
+
+// টেক্সট আইটেম থেকে অনুচ্ছেদ ও টেবিল অনুমান করে Word উপাদান বানায়
+function pageToDocx(items){
+  const F = 'Nirmala UI', W = [];
+  const tr = (t, s, b) => new docx.TextRun({text: t.replace(/\s+/g,' ').trim(), size: s, bold: !!b, font: F});
+  const para = (t, h = 11) => new docx.Paragraph({spacing:{after:120}, children:[tr(t, Math.max(18, Math.min(44, Math.round(h*2))), h >= 14)]});
+  const its = items.filter(it => 'str' in it && it.str.trim())
+    .map(it => ({t:it.str, x:it.transform[4], y:it.transform[5], w:it.width, h:Math.abs(it.height) || 10}))
+    .sort((a,b) => b.y - a.y || a.x - b.x);
+  const lines = [];
+  for(const it of its){
+    const L = lines[lines.length-1];
+    if(L && Math.abs(it.y - L.y) < it.h*.5) L.items.push(it); else lines.push({y:it.y, h:it.h, items:[it]});
+  }
+  for(const L of lines){
+    L.items.sort((a,b) => a.x - b.x); L.cells = []; let c = null;
+    for(const it of L.items){
+      const gap = c ? it.x - c.x2 : 0;
+      if(c && gap <= Math.max(L.h, 10)){ c.t += (gap > L.h*.15 && !/\s$/.test(c.t) && !/^\s/.test(it.t) ? ' ' : '') + it.t; c.x2 = Math.max(c.x2, it.x + it.w); }
+      else { c = {x:it.x, x2:it.x + it.w, t:it.t}; L.cells.push(c); }
+    }
+  }
+  let pt = null, ph = 11, pv = null, tb = null;
+  const flushP = () => { if(pt){ W.push(para(pt, ph)); pt = null; } };
+  const flushT = () => {
+    if(!tb) return; const rows = tb.rows; tb = null;
+    const xs = rows.flat().map(c => c.x).sort((a,b) => a-b), cols = [];
+    xs.forEach(x => { if(!cols.length || x - cols[cols.length-1] > 8) cols.push(x); });
+    if(rows.length < 2 || cols.length < 2){ rows.forEach(r => W.push(para(r.map(c => c.t).join('    ')))); return; }
+    const idx = x => { let b = 0; cols.forEach((c,i) => { if(Math.abs(c-x) < Math.abs(cols[b]-x)) b = i; }); return b; };
+    const grid = rows.map(r => { const a = Array(cols.length).fill(''); r.forEach(c => { const j = idx(c.x); a[j] = (a[j] ? a[j]+' ' : '') + c.t; }); return a; });
+    const sp = cols.slice(0,-1).map((c,i) => cols[i+1] - c); sp.push(sp.reduce((a,b) => a+b, 0) / sp.length);
+    const sum = sp.reduce((a,b) => a+b, 0), wd = sp.map(v => Math.max(600, Math.round(v/sum*9000)));
+    W.push(new docx.Table({
+      width:{size:9000, type:docx.WidthType.DXA}, columnWidths:wd, layout:docx.TableLayoutType.FIXED,
+      rows: grid.map(r => new docx.TableRow({children: r.map((t,j) => new docx.TableCell({width:{size:wd[j], type:docx.WidthType.DXA}, children:[new docx.Paragraph({children:[tr(t, 20)]})]}))}))
+    }));
+    W.push(new docx.Paragraph({children:[]}));
+  };
+  for(const L of lines){
+    const gap = pv ? pv.y - L.y : 999;
+    if(L.cells.length >= 2){
+      const row = L.cells.map(c => ({x:c.x, t:c.t}));
+      if(tb && gap < pv.h*3) tb.rows.push(row); else { flushP(); flushT(); tb = {rows:[row]}; }
+    } else {
+      const c = L.cells[0], last = tb && tb.rows[tb.rows.length-1], k = last && last.find(k => Math.abs(k.x - c.x) < 8);
+      if(k && gap < L.h*1.8) k.t += ' ' + c.t;
+      else {
+        flushT();
+        if(pt && gap > 0 && gap < pv.h*1.8 && Math.abs(L.h - ph) < 1.5) pt += ' ' + c.t; else { flushP(); pt = c.t; ph = L.h; }
+      }
+    }
+    pv = L;
+  }
+  flushT(); flushP();
+  return W;
 }
 
 // ---------- চালু ৪টি টুল ----------
@@ -235,28 +302,15 @@ const H = {
     }},
   pdf_word: {btn:'Word-এ রূপান্তর করুন', need:'একটি PDF বেছে নিন।',
     opts:`<label>স্ক্যান করা PDF হলে ভাষা (OCR)<select id="ol"><option value="ben+eng">বাংলা + English</option><option value="eng">শুধু English</option></select></label>
-          <p style="font-size:13px;color:#5d6579;margin:10px 0 0">সাধারণ PDF-এ শুধু টেক্সট রূপান্তর হয়। টেক্সট না পেলে নিজে থেকে OCR চলবে। প্রথমবার ভাষার ডেটা ডাউনলোডে সময় লাগবে, আর প্রতি পেজে ১০-৩০ সেকেন্ড লাগতে পারে। ছবি ও টেবিল বাদ যাবে, বাংলা OCR-এর ফল মিলিয়ে দেখে নিন।</p>`,
+          <p style="font-size:13px;color:#5d6579;margin:10px 0 0">সাধারণ PDF-এর টেক্সট ও টেবিল (অনুমান করে) রূপান্তর হয়, ছবি বাদ যায়। টেক্সট না পেলে নিজে থেকে OCR চলবে। প্রথমবার ভাষার ডেটা ডাউনলোডে সময় লাগবে, আর প্রতি পেজে ১০-৩০ সেকেন্ড লাগতে পারে। OCR চললে টেবিল আসবে না, শুধু লেখা আসবে। বাংলা OCR-এর ফল মিলিয়ে দেখে নিন।</p>`,
     async run(){
       const pdf = await pdfjsLib.getDocument({data: await files[0].arrayBuffer()}).promise;
       const ch = []; let any = 0;
       for(let i=1; i<=pdf.numPages; i++){
         msg(`পেজ ${i}/${pdf.numPages} পড়া হচ্ছে…`);
         const tc = await (await pdf.getPage(i)).getTextContent();
-        const lines = []; let c = null;
-        for(const it of tc.items){
-          if(!('str' in it)) continue;
-          const y = it.transform[5], h = it.height || 10;
-          if(c && Math.abs(y-c.y) < h*.5) c.t += it.str; else { c = {y, h, t:it.str}; lines.push(c); }
-        }
-        const ps = []; let p = null, pv = null;
-        for(const l of lines){
-          const t = l.t.trim(); if(!t) continue;
-          const gap = pv ? pv.y - l.y : -1;
-          if(p && gap > 0 && gap < pv.h*1.8) p += ' '+t; else { if(p) ps.push(p); p = t; }
-          pv = l;
-        }
-        if(p) ps.push(p);
-        ps.forEach((t,k) => { any = 1; ch.push(new docx.Paragraph({pageBreakBefore: i>1 && k==0, spacing:{after:120}, children:[new docx.TextRun({text:t, size:22, font:'Nirmala UI'})]})); });
+        const els = pageToDocx(tc.items);
+        if(els.length){ if(any) ch.push(new docx.Paragraph({children:[new docx.PageBreak()]})); any = 1; ch.push(...els); }
       }
       if(!any){
         let pg = 1;
@@ -290,6 +344,7 @@ function list(){
   $('#pk').textContent = files.length ? (m ? '+ আরও PDF যোগ করুন' : 'অন্য PDF বেছে নিন') : (m ? 'PDF ফাইলগুলো বেছে নিন' : 'PDF ফাইল বেছে নিন');
 }
 function openTool(id){
+  track('tool_open', {tool_name: id});
   if(id==='img_pdf'){ const fr=$('#ifr'); if(!fr.getAttribute('src')) fr.src='image-to-pdf.html'; $('#ifd').showModal(); return; }
   cur = id; files = []; const h = H[id], t = T.find(x => x[0]==id);
   $('#dt').textContent = t[1]+' '+t[2]; $('#dd').textContent = t[3];
@@ -320,6 +375,7 @@ $('#go').onclick = async () => {
   $('#go').disabled = false;
 };
 
+document.addEventListener('click', e => { const a = e.target.closest('.ext,.btn-ext'); if(a) track('extension_click', {location: a.closest('.promo') ? 'top_banner' : 'after_task'}); });
 $('#ifc').onclick = () => $('#ifd').close();
 $('#ifd').addEventListener('click', e => { if(e.target===$('#ifd')) $('#ifd').close(); });
 
