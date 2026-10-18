@@ -1,148 +1,309 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyWorksBD - ফ্রি পিডিএফ ও ইমেজ এডিটিং টুলস</title>
-    <!-- Tailwind CSS CDN ফাস্ট ডিজাইনের জন্য -->
-    <script src="https://jsdelivr.net"></script>
-    <!-- PDF-Lib লাইব্রেরি Client-side PDF তৈরির জন্য -->
-    <script src="https://unpkg.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyWorksBD - ফ্রি অনলাইন পিডিএফ টুলস</title>
+<meta name="description" content="Merge, Split, Compress ও PDF to Word - সবকিছু ব্রাউজারেই, কোনো ফাইল আপলোড ছাড়াই।">
+<style>
+:root{--ink:#1c2233;--mut:#5d6579;--line:#e3e6ee;--bg:#C2D7EC;--brand:#2f4fd8}
+*{box-sizing:border-box}
+body{margin:0;background:#C2D7EC;color:var(--ink);font-family:"Noto Sans Bengali","Hind Siliguri","Nirmala UI",system-ui,sans-serif;line-height:1.55}
+.promo{background:linear-gradient(90deg,#1d4ed8,#3730a3);color:#fff;text-align:center;padding:10px 14px;font-weight:600;font-size:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+.promo a,.btn-ext{background:#f5a623;color:#1c2233;padding:5px 14px;border-radius:99px;text-decoration:none;font-weight:700;font-size:13px}
+header.hero{text-align:center;padding:44px 16px 18px}
+h1{margin:0;font-size:clamp(26px,5vw,40px);letter-spacing:-.5px}
+.hero p{max-width:620px;margin:10px auto 0;color:var(--mut)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:18px 16px}
+.tabs button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 16px;border-radius:99px;font:inherit;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{max-width:1120px;margin:0 auto;padding:0 16px 48px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{position:relative;background:#fff;border:1px solid var(--line);border-top:4px solid var(--c);border-radius:10px;padding:18px;text-align:left;font:inherit;color:inherit}
+.card .ic{font-size:30px;line-height:1}
+.card h3{margin:10px 0 4px;font-size:17px}
+.card p{margin:0;font-size:13.5px;color:var(--mut)}
+.card.live{cursor:pointer}
+.card.live:hover{border-color:var(--c);box-shadow:0 6px 18px rgba(20,30,70,.1)}
+.card.soon{opacity:.62}
+.tag{position:absolute;top:12px;right:12px;font-size:11.5px;padding:2px 9px;border-radius:99px;background:#eceef5;color:var(--mut)}
+.live .tag{background:#dff5e6;color:#17693a}
+[data-cat=organize]{--c:#e5533d}[data-cat=optimize]{--c:#2e9b5f}[data-cat=convert]{--c:#3b6df0}
+[data-cat=edit]{--c:#8a4fd6}[data-cat=security]{--c:#d98a00}[data-cat=ai]{--c:#0f9aa8}
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,92vw);box-shadow:0 20px 60px rgba(10,20,50,.35)}
+dialog::backdrop{background:rgba(15,20,40,.55)}
+.dh{padding:20px 22px 6px}.dh h2{margin:0;font-size:22px}.dh p{margin:4px 0 0;color:var(--mut);font-size:14px}
+.db{padding:12px 22px 22px}
+.pick{display:block;border:2px dashed #b9c0d4;border-radius:10px;padding:20px;text-align:center;cursor:pointer;color:var(--mut);background:#fafbfe}
+.pick:hover{border-color:var(--brand);color:var(--brand)}
+.pick input{display:none}
+ul#fl{list-style:none;margin:10px 0;padding:0}
+ul#fl li{display:flex;gap:6px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:14px}
+ul#fl li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ul#fl small{color:var(--mut)}
+ul#fl button{border:0;background:#eef0f7;border-radius:6px;width:28px;height:28px;cursor:pointer}
+#op label{display:block;margin:10px 0 0;font-size:14px;font-weight:600}
+#op input[type=text],#op select{display:block;width:100%;margin-top:5px;padding:9px 10px;border:1px solid #c8cddd;border-radius:8px;font:inherit}
+#op label.ck{font-weight:400;display:flex;gap:8px;align-items:center}
+.row{display:flex;gap:10px;margin-top:16px}
+.row button{flex:1;padding:12px;border-radius:9px;border:0;font:inherit;font-weight:700;cursor:pointer}
+#go{background:var(--brand);color:#fff}#go:disabled{opacity:.5;cursor:wait}
+#cl{background:#eef0f7;color:var(--ink);flex:0 0 90px!important}
+#st{margin-top:12px;font-size:14px;border-radius:8px}
+#st.err{color:#b3261e;background:#fdecea;padding:10px}
+#st.ok{color:#17693a;background:#e8f7ee;padding:10px}
+#st.ok .btn-ext{display:inline-block;margin-top:6px}
+#ifd{width:min(1120px,96vw);height:92vh;overflow:hidden}
+#ifd[open]{display:flex;flex-direction:column}
+.ifh{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff}
+.ifh button{border:0;background:#eef0f7;border-radius:8px;padding:7px 14px;font:inherit;cursor:pointer}
+#ifr{flex:1;width:100%;border:0}
+footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top:1px solid var(--line);background:#fff}
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col font-sans">
+<body>
+<div class="promo"><span>🚀 চাকরির আবেদন ফর্ম পূরণ করুন মাত্র ১-ক্লিকে স্বয়ংক্রিয়ভাবে!</span><a class="ext" href="#" target="_blank" rel="noopener">Chrome-এ যুক্ত করুন (ফ্রি)</a></div>
 
-    <!-- 📢 ক্রোম এক্সটেনশন প্রোমোশন টপ ব্যানার -->
-    <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white text-center py-3 px-4 text-sm md:text-base font-semibold shadow-md sticky top-0 z-50 flex flex-wrap justify-center items-center gap-2">
-        <span>🚀 চাকরির আবেদন ফর্ম পূরণ করুন মাত্র ১-ক্লিকে স্বয়ংক্রিয়ভাবে!</span>
-        <a href="https://google.com" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-1.5 rounded-full font-bold transition duration-200 text-xs md:text-sm shadow-sm">
-            Chrome-এ যুক্ত করুন (সম্পূর্ণ ফ্রি)
-        </a>
-    </div>
+<header class="hero">
+  <h1>MyWorksBD PDF Tools</h1>
+  <p>আপনার ফাইল কোথাও আপলোড হয় না। সব কাজ হয় আপনার ব্রাউজারেই, তাই সম্পূর্ণ নিরাপদ।</p>
+</header>
 
-    <!-- 🏛️ মেনুবার ও মেইন কন্টেইনার -->
-    <main class="flex-grow container mx-auto max-w-4xl px-4 py-10">
-        <header class="text-center mb-10">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">MyWorksBD Tools Hub</h1>
-            <p class="text-gray-600 mt-2">কোনো ডেটা আপলোডের ঝামেলা ছাড়াই ব্রাউজারে সম্পূর্ণ নিরাপদে কাজ করুন</p>
-        </header>
+<nav class="tabs" id="tabs"></nav>
+<main><div class="grid" id="grid"></div></main>
 
-        <!-- 🛠️ টুলস গ্রিড লেআউট -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- 🖼️ Tool 1: Image to PDF -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">🖼️ Image to PDF</h3>
-                <p class="text-sm text-gray-500 mb-4">আপনার যেকোনো ছবিকে ইনস্ট্যান্ট পিডিএফ ফাইলে রূপান্তর করুন।</p>
-                <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-3" />
-                <button onclick="convertImageToPDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200">PDF ডাউনলোড করুন</button>
-            </div>
+<dialog id="dlg">
+  <div class="dh"><h2 id="dt"></h2><p id="dd"></p></div>
+  <div class="db">
+    <label class="pick"><input type="file" id="fi"><span id="pk">ফাইল বেছে নিতে এখানে ক্লিক করুন</span></label>
+    <ul id="fl"></ul>
+    <div id="op"></div>
+    <div class="row"><button id="go"></button><button id="cl">বন্ধ করুন</button></div>
+    <div id="st" role="status"></div>
+  </div>
+</dialog>
 
-            <!-- 🥞 Tool 2: Merge PDF -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">🥞 Merge PDF</h3>
-                <p class="text-sm text-gray-500 mb-4">একাধিক পিডিএফ ফাইল একসাথে যুক্ত করে একটি ফাইলে রূপান্তর করুন।</p>
-                <input type="file" id="pdfMergeInput" accept=".pdf" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 mb-3" />
-                <button onclick="mergePDFs()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200">পিডিএফ জুড়ুন ও ডাউনলোড করুন</button>
-            </div>
+<dialog id="ifd">
+  <div class="ifh"><strong>📷 Image to PDF</strong><button id="ifc">✕ বন্ধ করুন</button></div>
+  <iframe id="ifr" title="Image to PDF"></iframe>
+</dialog>
 
-            <!-- 📝 Tool 3: PDF Edit (Placeholder) -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">📝 PDF Editor</h3>
-                <p class="text-sm text-gray-500 mb-4">পিডিএফ ফাইলে টেক্সট বা প্রয়োজনীয় তথ্য অ্যাড করুন।</p>
-                <div class="bg-gray-50 border border-dashed border-gray-300 text-center py-6 text-gray-500 rounded-md text-sm">
-                    ⚠️ পিডিএফ এডিটর মডিউলটি লোড হচ্ছে...
-                </div>
-            </div>
+<footer>&copy; 2026 MyWorksBD. All Rights Reserved.</footer>
 
-            <!-- ✂️ Tool 4: Background Remove (Placeholder) -->
-            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">✂️ Background Remove</h3>
-                <p class="text-sm text-gray-500 mb-4">এআই (AI) প্রযুক্তির সাহায্যে ছবির ব্যাকগ্রাউন্ড মুহূর্তেই রিমুভ করুন।</p>
-                <div class="bg-gray-50 border border-dashed border-gray-300 text-center py-6 text-gray-500 rounded-md text-sm">
-                    🤖 AI ব্যাকগ্রাউন্ড রিমুভার ইন্টিগ্রেশন প্রসেসিংয়ে আছে...
-                </div>
-            </div>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script>
+// ✏️ এখানে আপনার Chrome এক্সটেনশনের আসল লিংক বসান
+const CHROME_URL = 'https://chromewebstore.google.com/';
+document.querySelectorAll('.ext').forEach(a => a.href = CHROME_URL);
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        </div>
-    </main>
+// [id, আইকন, নাম, বর্ণনা, ক্যাটাগরি, চালু(1)]
+const T = [
+['img_pdf','📷','Image to PDF','JPG ছবি যোগ, ক্রপ ও কমপ্রেস করে PDF বানান','convert',1],
+['pdf_word','📘','PDF to Word','PDF থেকে এডিটযোগ্য DOCX ফাইল বানান','convert',1],
+['compress','🗜️','Compress PDF','PDF-এর সাইজ কমান','optimize',1],
+['merge','🥞','Merge PDF','একাধিক PDF পছন্দমতো ক্রমে একটি ফাইলে জুড়ুন','organize',1],
+['split','✂️','Split PDF','একটি PDF ভেঙে পেজ বা রেঞ্জ আলাদা করুন','organize'],
+['pdf_ppt','📙','PDF to PowerPoint','PDF-কে PPTX স্লাইডে রূপান্তর করুন','convert'],
+['pdf_xls','📗','PDF to Excel','PDF-এর ডেটা Excel স্প্রেডশিটে নিন','convert'],
+['word_pdf','📄','Word to PDF','DOC ও DOCX ফাইল PDF করুন','convert'],
+['ppt_pdf','📊','PowerPoint to PDF','PPT ও PPTX স্লাইড PDF করুন','convert'],
+['xls_pdf','📈','Excel to PDF','Excel স্প্রেডশিট PDF করুন','convert'],
+['edit','📝','Edit PDF','টেক্সট, ছবি, শেপ ও হাতে আঁকা যোগ করুন','edit'],
+['pdf_jpg','🖼️','PDF to JPG','প্রতিটি পেজ JPG ছবিতে নিন','convert'],
+['sign','✍️','Sign PDF','নিজে সই করুন বা অন্যের সই চান','security'],
+['watermark','💧','Watermark','লেখা বা ছবির ওয়াটারমার্ক বসান','edit'],
+['rotate','🔄','Rotate PDF','পেজ ঘুরিয়ে সোজা করুন','edit'],
+['html_pdf','🌐','HTML to PDF','ওয়েবপেজ PDF করুন','convert'],
+['unlock','🔓','Unlock PDF','PDF-এর পাসওয়ার্ড সুরক্ষা সরান','security'],
+['protect','🔒','Protect PDF','পাসওয়ার্ড দিয়ে PDF সুরক্ষিত করুন','security'],
+['organize','🗂️','Organize PDF','পেজ সাজান, মুছুন বা যোগ করুন','organize'],
+['remove','🗑️','Remove pages','PDF থেকে অপ্রয়োজনীয় পেজ বাদ দিন','organize'],
+['extract','📤','Extract pages','নির্দিষ্ট পেজ আলাদা করে নিন','organize'],
+['pdfa','🏛️','PDF to PDF/A','দীর্ঘমেয়াদি সংরক্ষণের PDF/A ফরম্যাট','convert'],
+['repair','🛠️','Repair PDF','নষ্ট PDF মেরামত করুন','optimize'],
+['pagenum','🔢','Page numbers','পেজ নম্বর যোগ করুন','edit'],
+['scan','📱','Scan to PDF','মোবাইলে স্ক্যান করে PDF বানান','organize'],
+['ocr','🔍','OCR PDF','স্ক্যান PDF-কে সার্চযোগ্য টেক্সটে বদলান','optimize'],
+['compare','🆚','Compare PDF','দুই PDF পাশাপাশি তুলনা করুন','security'],
+['redact','⬛','Redact PDF','সংবেদনশীল তথ্য স্থায়ীভাবে মুছুন','security'],
+['crop','📐','Crop PDF','পেজের মার্জিন ছাঁটুন','edit'],
+['forms','☑️','PDF Forms','ফিলযোগ্য ফর্ম বানান বা পূরণ করুন','edit'],
+['summ','🧠','AI Summarizer','PDF-এর সংক্ষিপ্ত সারাংশ পান','ai'],
+['translate','🌍','Translate PDF','AI দিয়ে PDF অনুবাদ করুন','ai'],
+['pdf_md','⬇️','PDF to Markdown','PDF-কে Markdown ফাইলে নিন','ai']
+];
+const CATS = {all:'সব টুল',organize:'Organize PDF',optimize:'Optimize PDF',convert:'Convert PDF',edit:'Edit PDF',security:'PDF Security',ai:'PDF Intelligence'};
 
-    <!--  footer -->
-    <footer class="bg-white border-t border-gray-200 text-center py-4 text-xs text-gray-500">
-        &copy; 2026 MyWorksBD. All Rights Reserved.
-    </footer>
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sz = n => n > 1048576 ? (n/1048576).toFixed(2)+' MB' : Math.round(n/1024)+' KB';
+let cat = 'all', cur = null, files = [];
 
-    <!-- ⚙️ জাভাস্ক্রিপ্ট লজিক (Client-Side Processing) -->
-    <script>
-        // ১. Image to PDF লজিক
-        async function convertImageToPDF() {
-            const fileInput = document.getElementById('imageInput');
-            if (fileInput.files.length === 0) {
-                alert('অনুগ্রহ করে প্রথমে একটি ছবি সিলেক্ট করুন!');
-                return;
-            }
-            const file = fileInput.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = async function(e) {
-                const arrayBuffer = e.target.result;
-                const pdfDoc = await PDFLib.PDFDocument.create();
-                let image;
-                if (file.type === "image/jpeg" || file.type === "image/jpg") {
-                    image = await pdfDoc.embedJpg(arrayBuffer);
-                } else if (file.type === "image/png") {
-                    image = await pdfDoc.embedPng(arrayBuffer);
-                } else {
-                    alert('শুধুমাত্র JPG অথবা PNG ফরম্যাট সাপোর্ট করবে।');
-                    return;
-                }
+function drawTabs(){
+  $('#tabs').innerHTML = Object.entries(CATS).map(([k,v]) => `<button data-k="${k}" class="${k==cat?'on':''}">${v}</button>`).join('');
+}
+function drawGrid(){
+  $('#grid').innerHTML = T.filter(t => cat=='all' || t[4]==cat).map(t =>
+    `<${t[5]?'button':'div'} class="card ${t[5]?'live':'soon'}" data-cat="${t[4]}" ${t[5]?`data-id="${t[0]}"`:'aria-disabled="true"'}>
+      <span class="tag">${t[5]?'চালু':'শীঘ্রই আসছে'}</span><div class="ic">${t[1]}</div><h3>${t[2]}</h3><p>${t[3]}</p>
+    </${t[5]?'button':'div'}>`).join('');
+}
+$('#tabs').onclick = e => { const b = e.target.closest('[data-k]'); if(b){ cat = b.dataset.k; drawTabs(); drawGrid(); } };
+$('#grid').onclick = e => { const c = e.target.closest('[data-id]'); if(c) openTool(c.dataset.id); };
 
-                const page = pdfDoc.addPage([image.width, image.height]);
-                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
-                
-                const pdfBytes = await pdfDoc.save();
-                downloadBlob(pdfBytes, "converted_image.pdf", "application/pdf");
-                showAdPopup(); // কাজ শেষে বিজ্ঞাপন প্রদর্শন
-            };
-            reader.readAsArrayBuffer(file);
+// ---------- সাধারণ হেল্পার ----------
+function msg(t, cls){ const s = $('#st'); s.className = cls||''; s.innerHTML = t; }
+function done(extra){
+  msg(`🎉 সম্পন্ন! ফাইল ডাউনলোড হয়েছে। ${extra||''}<br><small>💡 সরকারি-বেসরকারি চাকরির ফর্ম ১-ক্লিকে পূরণ করতে আমাদের ক্রোম এক্সটেনশন ব্যবহার করুন:</small><br><a class="btn-ext" href="${CHROME_URL}" target="_blank" rel="noopener">Chrome-এ যুক্ত করুন</a>`, 'ok');
+}
+function dl(data, name, type){
+  const b = data instanceof Blob ? data : new Blob([data], {type: type||'application/pdf'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+const base = f => f.name.replace(/\.[^.]+$/, '');
+function ranges(s, n){
+  s = s.trim();
+  if(!s) return [...Array(n).keys()].map(i => [i]);
+  return s.split(',').map(p => {
+    const m = p.trim().match(/^(\d+)(?:-(\d+))?$/);
+    if(!m) throw Error('রেঞ্জ ঠিক নেই: "'+p.trim()+'"');
+    const a = +m[1], b = +(m[2]||m[1]);
+    if(a<1 || b>n || a>b) throw Error(`"${p.trim()}" সীমার বাইরে (মোট ${n} পেজ)`);
+    return Array.from({length:b-a+1}, (_, i) => a-1+i);
+  });
+}
+async function renderPages(file, scale, quality, onPage){
+  const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+  const out = await PDFLib.PDFDocument.create();
+  for(let i=1; i<=pdf.numPages; i++){
+    onPage(i, pdf.numPages);
+    const pg = await pdf.getPage(i), b = pg.getViewport({scale:1}), v = pg.getViewport({scale});
+    const c = document.createElement('canvas'); c.width = v.width; c.height = v.height;
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height);
+    await pg.render({canvasContext:x, viewport:v}).promise;
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', quality));
+    const im = await out.embedJpg(await blob.arrayBuffer());
+    out.addPage([b.width, b.height]).drawImage(im, {x:0, y:0, width:b.width, height:b.height});
+    c.width = c.height = 0;
+  }
+  return out.save();
+}
+
+// ---------- চালু ৪টি টুল ----------
+const H = {
+  merge: {multi:1, btn:'PDF জুড়ুন', min:2, need:'জুড়তে অন্তত ২টি PDF বেছে নিন।', opts:'',
+    async run(){
+      const out = await PDFLib.PDFDocument.create();
+      for(const [i,f] of files.entries()){
+        msg(`ফাইল ${i+1}/${files.length} যুক্ত হচ্ছে…`);
+        const d = await PDFLib.PDFDocument.load(await f.arrayBuffer());
+        (await out.copyPages(d, d.getPageIndices())).forEach(p => out.addPage(p));
+      }
+      const bytes = await out.save(); dl(bytes, 'merged.pdf'); done(`মোট সাইজ: ${sz(bytes.length)}`);
+    }},
+  split: {btn:'PDF ভাগ করুন', need:'একটি PDF বেছে নিন।',
+    opts:`<label>পেজ রেঞ্জ (যেমন 1-3, 5, 8-10)<input type="text" id="rg" placeholder="খালি রাখলে প্রতি পেজ আলাদা ফাইল হবে"></label>
+          <label class="ck"><input type="checkbox" id="one"> সব রেঞ্জ একটি PDF ফাইলে রাখুন</label>`,
+    async run(){
+      const src = await PDFLib.PDFDocument.load(await files[0].arrayBuffer());
+      const g = ranges($('#rg').value, src.getPageCount());
+      const mk = async idx => { const d = await PDFLib.PDFDocument.create(); (await d.copyPages(src, idx)).forEach(p => d.addPage(p)); return d.save(); };
+      if($('#one').checked || g.length==1){ dl(await mk(g.flat()), base(files[0])+'-split.pdf'); done(); }
+      else {
+        const z = new JSZip();
+        for(let i=0; i<g.length; i++){ msg(`অংশ ${i+1}/${g.length} তৈরি হচ্ছে…`); z.file(`part-${i+1}.pdf`, await mk(g[i])); }
+        dl(await z.generateAsync({type:'blob'}), base(files[0])+'-split.zip'); done(`${g.length}টি PDF ZIP ফাইলে।`);
+      }
+    }},
+  compress: {btn:'PDF কমপ্রেস করুন', need:'একটি PDF বেছে নিন।',
+    opts:`<label>কমপ্রেশন লেভেল<select id="lv">
+            <option value="high">বেশি কমপ্রেশন (সাইজ কম, মান কম)</option>
+            <option value="mid" selected>সুষম (প্রস্তাবিত)</option>
+            <option value="low">কম কমপ্রেশন (মান ভালো)</option></select></label>
+          <p style="font-size:13px;color:#5d6579;margin:10px 0 0">দ্রষ্টব্য: প্রতিটি পেজ ছবিতে রূপান্তর হয়, তাই কমপ্রেসড PDF-এর টেক্সট সিলেক্ট বা সার্চ করা যাবে না।</p>`,
+    async run(){
+      const lv = {high:[1.2,.5], mid:[1.6,.7], low:[2,.85]}[$('#lv').value];
+      const bytes = await renderPages(files[0], lv[0], lv[1], (i,n) => msg(`পেজ ${i}/${n} প্রসেস হচ্ছে…`));
+      dl(bytes, base(files[0])+'-compressed.pdf');
+      done(`${sz(files[0].size)} → ${sz(bytes.length)}` + (bytes.length >= files[0].size ? '<br>সাইজ কমেনি, ফাইলটি হয়তো আগেই অপ্টিমাইজড। অন্য লেভেল চেষ্টা করুন।' : ''));
+    }},
+  pdf_word: {btn:'Word-এ রূপান্তর করুন', need:'একটি PDF বেছে নিন।',
+    opts:`<p style="font-size:13px;color:#5d6579;margin:10px 0 0">শুধু টেক্সট রূপান্তর হবে। ছবি, টেবিল ও জটিল লেআউট বাদ যেতে পারে। স্ক্যান করা PDF-এ কাজ করবে না।</p>`,
+    async run(){
+      const pdf = await pdfjsLib.getDocument({data: await files[0].arrayBuffer()}).promise;
+      const ch = []; let any = 0;
+      for(let i=1; i<=pdf.numPages; i++){
+        msg(`পেজ ${i}/${pdf.numPages} পড়া হচ্ছে…`);
+        const tc = await (await pdf.getPage(i)).getTextContent();
+        const lines = []; let c = null;
+        for(const it of tc.items){
+          if(!('str' in it)) continue;
+          const y = it.transform[5], h = it.height || 10;
+          if(c && Math.abs(y-c.y) < h*.5) c.t += it.str; else { c = {y, h, t:it.str}; lines.push(c); }
         }
-
-        // ২. Merge PDF লজিক
-        async function mergePDFs() {
-            const fileInput = document.getElementById('pdfMergeInput');
-            if (fileInput.files.length < 2) {
-                alert('পিডিএফ জুড়তে অন্তত ২টি ফাইল সিলেক্ট করুন!');
-                return;
-            }
-
-            const mergedPdf = await PDFLib.PDFDocument.create();
-            for (let i = 0; i < fileInput.files.length; i++) {
-                const file = fileInput.files[i];
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
-                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-                copiedPages.forEach((page) => mergedPdf.addPage(page));
-            }
-
-            const mergedPdfBytes = await mergedPdf.save();
-            downloadBlob(mergedPdfBytes, "merged_document.pdf", "application/pdf");
-            showAdPopup(); // কাজ শেষে বিজ্ঞাপন প্রদর্শন
+        const ps = []; let p = null, pv = null;
+        for(const l of lines){
+          const t = l.t.trim(); if(!t) continue;
+          const gap = pv ? pv.y - l.y : -1;
+          if(p && gap > 0 && gap < pv.h*1.8) p += ' '+t; else { if(p) ps.push(p); p = t; }
+          pv = l;
         }
+        if(p) ps.push(p);
+        ps.forEach((t,k) => { any = 1; ch.push(new docx.Paragraph({pageBreakBefore: i>1 && k==0, spacing:{after:120}, children:[new docx.TextRun({text:t, size:22, font:'Nirmala UI'})]})); });
+      }
+      if(!any) throw Error('এই PDF-এ কোনো টেক্সট পাওয়া যায়নি। এটি স্ক্যান করা হলে OCR দরকার।');
+      dl(await docx.Packer.toBlob(new docx.Document({sections:[{children:ch}]})), base(files[0])+'.docx'); done();
+    }}
+};
 
-        // ফাইল ডাউনলোডার হেল্পার
-        function downloadBlob(bytes, filename, contentType) {
-            const blob = new Blob([bytes], { type: contentType });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-        }
+// ---------- ডায়ালগ ----------
+const dlg = $('#dlg');
+const ACC = '.pdf,application/pdf';
+function list(){
+  const m = H[cur].multi;
+  $('#fl').innerHTML = files.map((f,i) => `<li><span>${esc(f.name)} <small>${sz(f.size)}</small></span>${m?`<button data-a="u" data-i="${i}" aria-label="উপরে">↑</button><button data-a="d" data-i="${i}" aria-label="নিচে">↓</button>`:''}<button data-a="x" data-i="${i}" aria-label="সরান">✕</button></li>`).join('');
+  $('#pk').textContent = files.length ? (m ? '+ আরও PDF যোগ করুন' : 'অন্য PDF বেছে নিন') : (m ? 'PDF ফাইলগুলো বেছে নিন' : 'PDF ফাইল বেছে নিন');
+}
+function openTool(id){
+  if(id==='img_pdf'){ const fr=$('#ifr'); if(!fr.getAttribute('src')) fr.src='image-to-pdf.html'; $('#ifd').showModal(); return; }
+  cur = id; files = []; const h = H[id], t = T.find(x => x[0]==id);
+  $('#dt').textContent = t[1]+' '+t[2]; $('#dd').textContent = t[3];
+  const fi = $('#fi'); fi.multiple = !!h.multi; fi.accept = ACC;
+  $('#op').innerHTML = h.opts; $('#go').textContent = h.btn; $('#go').disabled = false;
+  msg(''); list(); dlg.showModal();
+}
+$('#fi').onchange = e => {
+  const pdfs = [...e.target.files].filter(f => /\.pdf$/i.test(f.name) || f.type=='application/pdf');
+  files = H[cur].multi ? [...files, ...pdfs] : pdfs.slice(0,1);
+  e.target.value = ''; msg(''); list();
+};
+$('#fl').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  const i = +b.dataset.i, a = b.dataset.a;
+  if(a=='x') files.splice(i,1);
+  else { const j = a=='u' ? i-1 : i+1; if(j>=0 && j<files.length) [files[i], files[j]] = [files[j], files[i]]; }
+  list();
+};
+$('#cl').onclick = () => dlg.close();
+dlg.addEventListener('click', e => { if(e.target===dlg) dlg.close(); });
+$('#go').onclick = async () => {
+  const h = H[cur];
+  if(!files.length || (h.min && files.length < h.min)) return msg(h.need, 'err');
+  $('#go').disabled = true; msg('শুরু হচ্ছে…');
+  try { await h.run(); }
+  catch(e){ console.error(e); msg('ত্রুটি: '+(e.message||e)+'<br><small>ফাইলটি পাসওয়ার্ড-সুরক্ষিত বা নষ্ট হতে পারে।</small>', 'err'); }
+  $('#go').disabled = false;
+};
 
-        // 🎯 কাজ শেষে প্রোমোশনাল পপ-আপ অ্যালার্ট
-        function showAdPopup() {
-            setTimeout(() => {
-                alert("🎉 আপনার ফাইলটি সফলভাবে প্রসেস করা হয়েছে!\n\n💡 আপনি কি জানেন? সরকারি ও বেসরকারি চাকরির ফর্ম মাত্র ১-ক্লিকে পূরণ করতে আমাদের 'All Job Form Auto Filler AI' ক্রোম এক্সটেনশনটি ব্যবহার করতে পারেন একদম ফ্রিতে!");
-            }, 500);
-        }
-    </script>
+$('#ifc').onclick = () => $('#ifd').close();
+$('#ifd').addEventListener('click', e => { if(e.target===$('#ifd')) $('#ifd').close(); });
+
+drawTabs(); drawGrid();
+</script>
 </body>
 </html>
