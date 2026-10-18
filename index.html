@@ -93,11 +93,11 @@ footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
-// ✏️ এখানে আপনার Chrome এক্সটেনশনের আসল লিংক বসান
-const CHROME_URL = 'https://chromewebstore.google.com/';
+// Chrome এক্সটেনশনের লিংক (ব্যানার ও কাজ শেষের বাটন দুই জায়গাতেই ব্যবহার হয়)
+const CHROME_URL = 'https://chromewebstore.google.com/detail/all-job-form-auto-filler/mimopbkpobmlnfilfhlclpeiediabpeg';
 document.querySelectorAll('.ext').forEach(a => a.href = CHROME_URL);
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
