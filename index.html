@@ -94,6 +94,7 @@ footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 // ✏️ এখানে আপনার Chrome এক্সটেনশনের আসল লিংক বসান
 const CHROME_URL = 'https://chromewebstore.google.com/';
@@ -233,7 +234,8 @@ const H = {
       done(`${sz(files[0].size)} → ${sz(bytes.length)}` + (bytes.length >= files[0].size ? '<br>সাইজ কমেনি, ফাইলটি হয়তো আগেই অপ্টিমাইজড। অন্য লেভেল চেষ্টা করুন।' : ''));
     }},
   pdf_word: {btn:'Word-এ রূপান্তর করুন', need:'একটি PDF বেছে নিন।',
-    opts:`<p style="font-size:13px;color:#5d6579;margin:10px 0 0">শুধু টেক্সট রূপান্তর হবে। ছবি, টেবিল ও জটিল লেআউট বাদ যেতে পারে। স্ক্যান করা PDF-এ কাজ করবে না।</p>`,
+    opts:`<label>স্ক্যান করা PDF হলে ভাষা (OCR)<select id="ol"><option value="ben+eng">বাংলা + English</option><option value="eng">শুধু English</option></select></label>
+          <p style="font-size:13px;color:#5d6579;margin:10px 0 0">সাধারণ PDF-এ শুধু টেক্সট রূপান্তর হয়। টেক্সট না পেলে নিজে থেকে OCR চলবে। প্রথমবার ভাষার ডেটা ডাউনলোডে সময় লাগবে, আর প্রতি পেজে ১০-৩০ সেকেন্ড লাগতে পারে। ছবি ও টেবিল বাদ যাবে, বাংলা OCR-এর ফল মিলিয়ে দেখে নিন।</p>`,
     async run(){
       const pdf = await pdfjsLib.getDocument({data: await files[0].arrayBuffer()}).promise;
       const ch = []; let any = 0;
@@ -256,7 +258,25 @@ const H = {
         if(p) ps.push(p);
         ps.forEach((t,k) => { any = 1; ch.push(new docx.Paragraph({pageBreakBefore: i>1 && k==0, spacing:{after:120}, children:[new docx.TextRun({text:t, size:22, font:'Nirmala UI'})]})); });
       }
-      if(!any) throw Error('এই PDF-এ কোনো টেক্সট পাওয়া যায়নি। এটি স্ক্যান করা হলে OCR দরকার।');
+      if(!any){
+        let pg = 1;
+        msg('এই PDF-এ সিলেক্টযোগ্য টেক্সট নেই। OCR শুরু হচ্ছে, প্রথমবার একটু সময় লাগবে…');
+        const wk = await Tesseract.createWorker($('#ol').value, 1, {logger: m => { if(m.status) msg(`OCR: পেজ ${pg}/${pdf.numPages} · ${m.status}${m.progress ? ' ' + Math.round(m.progress*100) + '%' : ''}`); }});
+        for(let i=1; i<=pdf.numPages; i++){
+          pg = i;
+          const page = await pdf.getPage(i), v = page.getViewport({scale:3});
+          const c = document.createElement('canvas'); c.width = v.width; c.height = v.height;
+          const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height);
+          await page.render({canvasContext:x, viewport:v}).promise;
+          const {data:{text}} = await wk.recognize(c);
+          text.split(/\n\s*\n/).map(t => t.replace(/\s*\n\s*/g,' ').trim()).filter(Boolean).forEach((t,k) => {
+            any = 1; ch.push(new docx.Paragraph({pageBreakBefore: i>1 && k==0, spacing:{after:120}, children:[new docx.TextRun({text:t, size:22, font:'Nirmala UI'})]}));
+          });
+          c.width = c.height = 0;
+        }
+        await wk.terminate();
+        if(!any) throw Error('OCR-এও কোনো লেখা পাওয়া যায়নি। স্ক্যানের মান বা ভাষা বদলে দেখুন।');
+      }
       dl(await docx.Packer.toBlob(new docx.Document({sections:[{children:ch}]})), base(files[0])+'.docx'); done();
     }}
 };
