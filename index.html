@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyWorksBD - ফ্রি পিডিএফ ও ইমেজ এডিটিং টুলস</title>
+    <!-- Tailwind CSS CDN ফাস্ট ডিজাইনের জন্য -->
+    <script src="https://jsdelivr.net"></script>
+    <!-- PDF-Lib লাইব্রেরি Client-side PDF তৈরির জন্য -->
+    <script src="https://unpkg.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col font-sans">
+
+    <!-- 📢 ক্রোম এক্সটেনশন প্রোমোশন টপ ব্যানার -->
+    <div class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white text-center py-3 px-4 text-sm md:text-base font-semibold shadow-md sticky top-0 z-50 flex flex-wrap justify-center items-center gap-2">
+        <span>🚀 চাকরির আবেদন ফর্ম পূরণ করুন মাত্র ১-ক্লিকে স্বয়ংক্রিয়ভাবে!</span>
+        <a href="https://google.com" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-slate-900 px-4 py-1.5 rounded-full font-bold transition duration-200 text-xs md:text-sm shadow-sm">
+            Chrome-এ যুক্ত করুন (সম্পূর্ণ ফ্রি)
+        </a>
+    </div>
+
+    <!-- 🏛️ মেনুবার ও মেইন কন্টেইনার -->
+    <main class="flex-grow container mx-auto max-w-4xl px-4 py-10">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">MyWorksBD Tools Hub</h1>
+            <p class="text-gray-600 mt-2">কোনো ডেটা আপলোডের ঝামেলা ছাড়াই ব্রাউজারে সম্পূর্ণ নিরাপদে কাজ করুন</p>
+        </header>
+
+        <!-- 🛠️ টুলস গ্রিড লেআউট -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- 🖼️ Tool 1: Image to PDF -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">🖼️ Image to PDF</h3>
+                <p class="text-sm text-gray-500 mb-4">আপনার যেকোনো ছবিকে ইনস্ট্যান্ট পিডিএফ ফাইলে রূপান্তর করুন।</p>
+                <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-3" />
+                <button onclick="convertImageToPDF()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200">PDF ডাউনলোড করুন</button>
+            </div>
+
+            <!-- 🥞 Tool 2: Merge PDF -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">🥞 Merge PDF</h3>
+                <p class="text-sm text-gray-500 mb-4">একাধিক পিডিএফ ফাইল একসাথে যুক্ত করে একটি ফাইলে রূপান্তর করুন।</p>
+                <input type="file" id="pdfMergeInput" accept=".pdf" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 mb-3" />
+                <button onclick="mergePDFs()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-200">পিডিএফ জুড়ুন ও ডাউনলোড করুন</button>
+            </div>
+
+            <!-- 📝 Tool 3: PDF Edit (Placeholder) -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">📝 PDF Editor</h3>
+                <p class="text-sm text-gray-500 mb-4">পিডিএফ ফাইলে টেক্সট বা প্রয়োজনীয় তথ্য অ্যাড করুন।</p>
+                <div class="bg-gray-50 border border-dashed border-gray-300 text-center py-6 text-gray-500 rounded-md text-sm">
+                    ⚠️ পিডিএফ এডিটর মডিউলটি লোড হচ্ছে...
+                </div>
+            </div>
+
+            <!-- ✂️ Tool 4: Background Remove (Placeholder) -->
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-700 mb-2 flex items-center gap-2">✂️ Background Remove</h3>
+                <p class="text-sm text-gray-500 mb-4">এআই (AI) প্রযুক্তির সাহায্যে ছবির ব্যাকগ্রাউন্ড মুহূর্তেই রিমুভ করুন।</p>
+                <div class="bg-gray-50 border border-dashed border-gray-300 text-center py-6 text-gray-500 rounded-md text-sm">
+                    🤖 AI ব্যাকগ্রাউন্ড রিমুভার ইন্টিগ্রেশন প্রসেসিংয়ে আছে...
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!--  footer -->
+    <footer class="bg-white border-t border-gray-200 text-center py-4 text-xs text-gray-500">
+        &copy; 2026 MyWorksBD. All Rights Reserved.
+    </footer>
+
+    <!-- ⚙️ জাভাস্ক্রিপ্ট লজিক (Client-Side Processing) -->
+    <script>
+        // ১. Image to PDF লজিক
+        async function convertImageToPDF() {
+            const fileInput = document.getElementById('imageInput');
+            if (fileInput.files.length === 0) {
+                alert('অনুগ্রহ করে প্রথমে একটি ছবি সিলেক্ট করুন!');
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                const arrayBuffer = e.target.result;
+                const pdfDoc = await PDFLib.PDFDocument.create();
+                let image;
+                if (file.type === "image/jpeg" || file.type === "image/jpg") {
+                    image = await pdfDoc.embedJpg(arrayBuffer);
+                } else if (file.type === "image/png") {
+                    image = await pdfDoc.embedPng(arrayBuffer);
+                } else {
+                    alert('শুধুমাত্র JPG অথবা PNG ফরম্যাট সাপোর্ট করবে।');
+                    return;
+                }
+
+                const page = pdfDoc.addPage([image.width, image.height]);
+                page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+                
+                const pdfBytes = await pdfDoc.save();
+                downloadBlob(pdfBytes, "converted_image.pdf", "application/pdf");
+                showAdPopup(); // কাজ শেষে বিজ্ঞাপন প্রদর্শন
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ২. Merge PDF লজিক
+        async function mergePDFs() {
+            const fileInput = document.getElementById('pdfMergeInput');
+            if (fileInput.files.length < 2) {
+                alert('পিডিএফ জুড়তে অন্তত ২টি ফাইল সিলেক্ট করুন!');
+                return;
+            }
+
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            for (let i = 0; i < fileInput.files.length; i++) {
+                const file = fileInput.files[i];
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach((page) => mergedPdf.addPage(page));
+            }
+
+            const mergedPdfBytes = await mergedPdf.save();
+            downloadBlob(mergedPdfBytes, "merged_document.pdf", "application/pdf");
+            showAdPopup(); // কাজ শেষে বিজ্ঞাপন প্রদর্শন
+        }
+
+        // ফাইল ডাউনলোডার হেল্পার
+        function downloadBlob(bytes, filename, contentType) {
+            const blob = new Blob([bytes], { type: contentType });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+
+        // 🎯 কাজ শেষে প্রোমোশনাল পপ-আপ অ্যালার্ট
+        function showAdPopup() {
+            setTimeout(() => {
+                alert("🎉 আপনার ফাইলটি সফলভাবে প্রসেস করা হয়েছে!\n\n💡 আপনি কি জানেন? সরকারি ও বেসরকারি চাকরির ফর্ম মাত্র ১-ক্লিকে পূরণ করতে আমাদের 'All Job Form Auto Filler AI' ক্রোম এক্সটেনশনটি ব্যবহার করতে পারেন একদম ফ্রিতে!");
+            }, 500);
+        }
+    </script>
+</body>
+</html>
