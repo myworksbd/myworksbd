@@ -60,6 +60,7 @@ dialog::backdrop{background:rgba(15,20,40,.55)}
   <div id="pages"></div>
   <div id="bar" hidden>
     <button class="btn" id="add">➕ Add image</button>
+    <select id="qs" class="btn" aria-label="PDF সাইজ" style="padding:10px 8px"><option value="s" selected>📉 ছোট (~১০০ KB)</option><option value="m">⚖️ মাঝারি (~২০০ KB)</option><option value="h">🖼️ সেরা মান (~৫০০ KB)</option><option value="x">💎 সবচেয়ে সেরা (~১০ MB)</option></select>
     <button class="btn pri" id="mk">📄 PDF করুন</button>
   </div>
   <div id="st" role="status"></div>
@@ -231,6 +232,28 @@ function warp(src, q){
   ox.putImageData(od, 0, 0); return out;
 }
 
+// ---- নির্দিষ্ট সাইজে ফিট করা ----
+const PRESETS = {s:{kb:100,dim:1400,hi:.7}, m:{kb:200,dim:1600,hi:.78}, h:{kb:500,dim:2000,hi:.88}, x:{kb:10000,dim:2400,hi:.95}};
+const toJpg = (c, q) => new Promise(r => c.toBlob(r, 'image/jpeg', q));
+async function jpegFit(base, light, budget, P){
+  const QMIN = .45; let dim = Math.min(P.dim, Math.max(base.width, base.height)), best = null;
+  for(let t=0; t<14; t++){
+    const k = Math.min(1, dim/Math.max(base.width, base.height)); let sc = base;
+    if(k < 1){ sc = document.createElement('canvas'); sc.width = Math.round(base.width*k); sc.height = Math.round(base.height*k); sc.getContext('2d').drawImage(base, 0, 0, sc.width, sc.height); }
+    const c = light ? enhance(sc) : sc;
+    let b = await toJpg(c, P.hi);
+    if(b.size <= budget) return {blob:b, c};
+    const bl = await toJpg(c, QMIN); best = {blob:bl, c};
+    if(bl.size <= budget){
+      let lo = QMIN, hi = P.hi, ok = bl;
+      for(let i=0; i<5; i++){ const mid = (lo+hi)/2, bm = await toJpg(c, mid); if(bm.size <= budget){ ok = bm; lo = mid; } else hi = mid; }
+      return {blob:ok, c};
+    }
+    dim = Math.round(dim*.85); if(dim < 500) break;
+  }
+  return best;
+}
+
 // ---- PDF করুন ----
 $('#mk').onclick = async () => {
   if(!pages.length) return; const btn = $('#mk'); btn.disabled = true;
@@ -238,8 +261,9 @@ $('#mk').onclick = async () => {
     const doc = await PDFLib.PDFDocument.create();
     for(const [i, pg] of pages.entries()){
       msg('পেজ '+(i+1)+'/'+pages.length+' প্রসেস হচ্ছে…');
-      const c = pg.light ? enhance(pg.base) : pg.base;
-      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .88));
+      const P = PRESETS[$('#qs').value] || PRESETS.s, n = pages.length;
+      const budget = Math.max(6000, (P.kb*1024 - 2000 - 700*n)/n);
+      const {blob, c} = await jpegFit(pg.base, pg.light, budget, P);
       const im = await doc.embedJpg(await blob.arrayBuffer()), W = 595, H = Math.round(W*c.height/c.width);
       doc.addPage([W, H]).drawImage(im, {x:0, y:0, width:W, height:H});
     }
@@ -248,7 +272,8 @@ $('#mk').onclick = async () => {
     a.download = 'scan-'+d.toISOString().slice(0,16).replace(/[-:T]/g,'')+'.pdf';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
     track('tool_success', {tool_name:'img_pdf'});
-    msg('🎉 সম্পন্ন! PDF ডাউনলোড হয়েছে ('+(bytes.length/1024 > 1024 ? (bytes.length/1048576).toFixed(2)+' MB' : Math.round(bytes.length/1024)+' KB')+')।<br><small>💡 সরকারি-বেসরকারি চাকরির ফর্ম ১-ক্লিকে পূরণ করতে আমাদের ক্রোম এক্সটেনশন ব্যবহার করুন:</small><br><a href="'+CHROME_URL+'" target="_blank" rel="noopener">Chrome-এ যুক্ত করুন</a>', 'ok');
+    const PT = PRESETS[$('#qs').value] || PRESETS.s, over = bytes.length > PT.kb*1024*1.15 ? '<br><small>⚠️ পেজ বেশি হওয়ায় লক্ষ্য সাইজে পৌঁছানো যায়নি; পেজ কমান বা ছোট সাইজ বেছে নিন।</small>' : '';
+    msg('🎉 সম্পন্ন! PDF ডাউনলোড হয়েছে ('+(bytes.length/1024 > 1024 ? (bytes.length/1048576).toFixed(2)+' MB' : Math.round(bytes.length/1024)+' KB')+')।'+over+'<br><small>💡 সরকারি-বেসরকারি চাকরির ফর্ম ১-ক্লিকে পূরণ করতে আমাদের ক্রোম এক্সটেনশন ব্যবহার করুন:</small><br><a href="'+CHROME_URL+'" target="_blank" rel="noopener">Chrome-এ যুক্ত করুন</a>', 'ok');
   } catch(e){ console.error(e); msg('ত্রুটি: '+(e.message||e), 'err'); }
   btn.disabled = false;
 };
