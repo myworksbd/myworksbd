@@ -345,7 +345,7 @@ function list(){
 }
 function openTool(id){
   track('tool_open', {tool_name: id});
-  if(id==='img_pdf'){ const fr=$('#ifr'); if(!fr.getAttribute('src')) fr.src='image-to-pdf.html'; $('#ifd').showModal(); return; }
+  if(id==='img_pdf'){ window.open('scan-to-pdf.html','_blank','noopener'); return; }
   cur = id; files = []; const h = H[id], t = T.find(x => x[0]==id);
   $('#dt').textContent = t[1]+' '+t[2]; $('#dd').textContent = t[3];
   const fi = $('#fi'); fi.multiple = !!h.multi; fi.accept = ACC;
