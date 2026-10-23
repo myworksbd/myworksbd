@@ -29,6 +29,11 @@ h1{margin:0;font-size:28px}.sub{margin:6px 0 18px;color:var(--mut)}
 #cf input,#cf select{display:block;width:100%;margin-top:4px;padding:9px 10px;border:1px solid #c8cddd;border-radius:8px;font:inherit;background:#fff}
 #cf .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}#cf details{margin-top:12px;font-size:14px}#cf summary{cursor:pointer;color:var(--mut)}
 #cf .hint{margin:6px 0 0;font-size:13px;color:var(--mut)}#cf .row{margin-top:16px}
+#cf .sigbox{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fafbfe}
+#cf .sigbox b{font-size:14px}#cf .sigbox input[type=file]{padding:7px 8px;background:#fff}
+#cf .sigprev{display:flex;align-items:center;gap:10px;margin-top:8px}
+#cf #cf-sigp{width:150px;height:auto;border:1px dashed #b9c0d4;border-radius:6px;background:#fff}
+#cf .sigprev .btn{flex:0 0 auto;min-width:0;padding:8px 12px;font-size:13px}
 .pg{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:14px}
 .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .ph button{border:0;background:#eef0f7;border-radius:8px;width:34px;height:34px;margin-left:6px;cursor:pointer;font-size:16px}
@@ -61,9 +66,9 @@ dialog::backdrop{background:rgba(15,20,40,.55)}
   <h1 id="ttl">📷 Image to PDF</h1>
   <p class="sub" id="sub">ছবি তুলুন বা গ্যালারি থেকে নিন, সোজা ও উজ্জ্বল করে PDF বানান। ছবি কোথাও আপলোড হয় না।</p>
   <div class="srcrow" id="start">
+    <button class="big" id="cert-b" hidden>📝<b>প্রত্যয়ন</b></button>
     <button class="big" data-s="gal">🖼️<b>গ্যালারি থেকে</b></button>
     <button class="big" data-s="cam">📷<b>ক্যামেরা</b></button>
-    <button class="big" id="cert-b" hidden>📝<b>প্রত্যয়ন</b></button>
   </div>
   <div id="pages"></div>
   <div id="bar" hidden>
@@ -97,6 +102,12 @@ dialog::backdrop{background:rgba(15,20,40,.55)}
     <label>পল্লী বিদ্যুৎ সমিতি<input id="cf-samity" autocomplete="off"></label>
     <label>জোনাল অফিসের নাম<input id="cf-zone" autocomplete="off"></label>
   </details>
+  <div class="sigbox">
+    <b>✍️ স্বাক্ষর (ঐচ্ছিক)</b>
+    <input type="file" id="cf-sigf" accept="image/*">
+    <p class="hint">সাদা কাগজে কলম দিয়ে সই করে ছবি তুলুন বা গ্যালারি থেকে দিন। ব্যাকগ্রাউন্ড নিজে থেকে সরে যাবে এবং সই নামের ঠিক উপরে বসবে।</p>
+    <div class="sigprev" id="cf-sigw" hidden><canvas id="cf-sigp"></canvas><button class="btn" id="cf-sigx" type="button">✕ স্বাক্ষর বাদ দিন</button></div>
+  </div>
   <div class="row"><button class="btn" id="cf-x">বাতিল</button><button class="btn pri" id="cf-ok">✓ প্রত্যয়ন তৈরি করুন</button></div>
 </dialog>
 
@@ -323,6 +334,10 @@ function certCanvas(v){
   let y = para(g, p1, 148, 380, 944, 54, 0) + 22;
   y = para(g, p2, 148, y, 944, 54, 48);
   g.textAlign = 'center'; const cx = 880; y += 150;
+  if(sigC){  // স্বাক্ষর: নামের ঠিক উপরে, মাঝ বরাবর (নমুনা PDF-এর মতো)
+    const bw = 340, bh = 135, k = Math.min(bw/sigC.width, bh/sigC.height), w = sigC.width*k, h = sigC.height*k;
+    g.imageSmoothingQuality = 'high'; g.drawImage(sigC, cx - w/2, y - 34 - h, w, h);
+  }
   for(const t of [f(v.name), f(v.vill), f(v.upz)+', '+f(v.dist)+'।']){ g.fillText(t, cx, y); y += 46; }
   return c;
 }
@@ -331,9 +346,63 @@ async function ensureFont(){
     await Promise.race([Promise.all([document.fonts.load('700 66px "Noto Sans Bengali"', 'অনাপত্তি সনদপত্র'), document.fonts.load('400 29px "Noto Sans Bengali"', 'এই মর্মে প্রত্যয়ন')]), new Promise(r => setTimeout(r, 4000))]);
   } catch(e){}
 }
+// ---- স্বাক্ষর: ছবি থেকে ব্যাকগ্রাউন্ড সরিয়ে শুধু কালি রাখা ----
+let sigC = null;
+function sigProcess(img){
+  const k = Math.min(1, 900/Math.max(img.naturalWidth, img.naturalHeight)), W = Math.max(1, Math.round(img.naturalWidth*k)), H = Math.max(1, Math.round(img.naturalHeight*k));
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d', {willReadFrequently:true}); x.drawImage(img, 0, 0, W, H);
+  const id = x.getImageData(0, 0, W, H), d = id.data, n = W*H; let hasA = false;
+  for(let i = 3; i < d.length; i += 4) if(d[i] < 200){ hasA = true; break; }
+  if(!hasA){  // সাধারণ ছবি (JPG/PNG): কাগজের আলো মেপে কালি আলাদা করা
+    const L = new Uint8Array(n), hist = new Uint32Array(256);
+    for(let i = 0; i < n; i++){ const v = (d[i*4]*77 + d[i*4+1]*150 + d[i*4+2]*29) >> 8; L[i] = v; hist[v]++; }
+    let a = 0, gp = 255; for(let i = 0; i < 256; i++){ a += hist[i]; if(a >= n*.8){ gp = i; break; } }
+    gp = Math.max(gp, 90);
+    const bs = 24, gw = Math.ceil(W/bs), gh = Math.ceil(H/bs), grid = new Float32Array(gw*gh);
+    for(let by = 0; by < gh; by++) for(let bx = 0; bx < gw; bx++){
+      const h2 = new Uint32Array(256); let m = 0;
+      for(let yy = by*bs; yy < Math.min(H, by*bs+bs); yy++) for(let xx = bx*bs; xx < Math.min(W, bx*bs+bs); xx++){ h2[L[yy*W+xx]]++; m++; }
+      let s2 = 0, v = gp; for(let i = 0; i < 256; i++){ s2 += h2[i]; if(s2 >= m*.8){ v = i; break; } }
+      grid[by*gw+bx] = Math.max(v, gp*.75);
+    }
+    const sm = new Float32Array(gw*gh);
+    for(let by = 0; by < gh; by++) for(let bx = 0; bx < gw; bx++){ let s2 = 0, q = 0; for(let u = -1; u <= 1; u++) for(let v = -1; v <= 1; v++){ const X = bx+u, Y = by+v; if(X >= 0 && X < gw && Y >= 0 && Y < gh){ s2 += grid[Y*gw+X]; q++; } } sm[by*gw+bx] = s2/q; }
+    for(let y = 0; y < H; y++){
+      const fy = Math.min(gh-1, Math.max(0, y/bs-.5)), y0 = Math.floor(fy), y1 = Math.min(gh-1, y0+1), ty = fy-y0;
+      for(let xx = 0; xx < W; xx++){
+        const fx = Math.min(gw-1, Math.max(0, xx/bs-.5)), x0 = Math.floor(fx), x1 = Math.min(gw-1, x0+1), tx = fx-x0;
+        const paper = (sm[y0*gw+x0]*(1-tx) + sm[y0*gw+x1]*tx)*(1-ty) + (sm[y1*gw+x0]*(1-tx) + sm[y1*gw+x1]*tx)*ty;
+        const t1 = paper*.86, t0 = paper*.5, i = y*W+xx, al = Math.min(1, Math.max(0, (t1-L[i])/(t1-t0))), o = i*4;
+        if(al < .1){ d[o+3] = 0; continue; }
+        const f = .55 + .45*(1-al);  // কালি একটু গাঢ় করা
+        d[o] = d[o]*f; d[o+1] = d[o+1]*f; d[o+2] = d[o+2]*f; d[o+3] = Math.round(Math.min(1, al*1.15)*255);
+      }
+    }
+    x.putImageData(id, 0, 0);
+  }
+  // কালির সীমানা অনুযায়ী ছেঁটে ফেলা
+  let x0 = W, y0 = H, x1 = -1, y1 = -1;
+  for(let y = 0; y < H; y++) for(let xx = 0; xx < W; xx++) if(d[(y*W+xx)*4+3] > 60){ if(xx < x0) x0 = xx; if(xx > x1) x1 = xx; if(y < y0) y0 = y; if(y > y1) y1 = y; }
+  if(x1 < 0 || (x1-x0) < 8 || (y1-y0) < 8) throw new Error('ছবিতে স্বাক্ষর পাওয়া যায়নি। সাদা কাগজে গাঢ় কলমে সই করে স্পষ্ট ছবি দিন।');
+  const p = 6; x0 = Math.max(0, x0-p); y0 = Math.max(0, y0-p); x1 = Math.min(W-1, x1+p); y1 = Math.min(H-1, y1+p);
+  const o = document.createElement('canvas'); o.width = x1-x0+1; o.height = y1-y0+1; o.getContext('2d').drawImage(c, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
+  return o;
+}
+function sigShow(){
+  $('#cf-sigw').hidden = !sigC;
+  if(sigC){ const v = $('#cf-sigp'); v.width = 300; v.height = Math.max(20, Math.round(300*sigC.height/sigC.width)); const g = v.getContext('2d'); g.clearRect(0, 0, v.width, v.height); g.drawImage(sigC, 0, 0, v.width, v.height); }
+}
+$('#cf-sigf').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+  try {
+    const im = await new Promise((ok, no) => { const u = URL.createObjectURL(f), i = new Image(); i.onload = () => { URL.revokeObjectURL(u); ok(i); }; i.onerror = () => { URL.revokeObjectURL(u); no(Error('ছবিটি পড়া যায়নি (JPG বা PNG ব্যবহার করুন)')); }; i.src = u; });
+    sigC = sigProcess(im); sigShow(); track('cert_signature', {ok:1});
+  } catch(err){ alert(err.message || err); }
+};
+$('#cf-sigx').onclick = () => { sigC = null; sigShow(); };
 function openCert(){
   for(const k in CF){ const el = $('#cf-'+k); if(el) el.value = CF[k]; }
-  $('#cf').showModal();
+  sigShow(); $('#cf').showModal();
 }
 $('#cert-b').onclick = $('#cert-b2').onclick = openCert;
 $('#cf-x').onclick = () => $('#cf').close();
