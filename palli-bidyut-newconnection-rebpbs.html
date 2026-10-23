@@ -38,7 +38,7 @@ dialog::backdrop{background:rgba(15,20,40,.55)}
 .db input[type=range]{width:100%;margin-top:6px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hint{margin:6px 0 0;font-size:12.5px;color:var(--mut)}
-#p-cv{display:block;margin:12px auto 0;max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff;touch-action:none;cursor:grab}
+#p-cv{display:block;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .chip{border:1px solid #c8cddd;background:#fff;border-radius:99px;padding:3px 12px;font:inherit;font-size:13px;cursor:pointer}
 .chip:hover{border-color:var(--brand);color:var(--brand)}
@@ -61,6 +61,18 @@ ul.fl button{border:0;background:#eef0f7;border-radius:6px;width:28px;height:28p
 .ifh{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:#fff}
 .ifh button{border:0;background:#eef0f7;border-radius:8px;padding:7px 14px;font:inherit;cursor:pointer}
 #ifr{flex:1;width:100%;border:0}
+
+.srcrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.big{background:#fff;border:2px dashed #9fb2d6;border-radius:14px;padding:28px 10px;font:inherit;font-size:34px;cursor:pointer;color:var(--ink)}
+.big b{display:block;font-size:16px;margin-top:6px}
+.big:hover{border-color:var(--brand)}
+#p-cv{margin:6px auto 0;cursor:default;touch-action:auto;width:min(300px,100%)}
+#p-ec{display:block;margin:6px auto 0;max-width:100%;height:auto;border-radius:6px;background:#eee;touch-action:none}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.abtn{flex:1;min-width:130px;border:0;border-radius:10px;padding:11px 12px;font:inherit;font-weight:700;background:#eef0f7;color:var(--ink);cursor:pointer}
+.abtn.on{background:#fff3d6;color:#8a5a00}.abtn:disabled{opacity:.55;cursor:wait}
+.sz{text-align:center;font-size:13px;color:var(--mut);margin-top:6px}
+ul.fl button{margin-left:2px}
 [hidden]{display:none!important}
 footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top:1px solid var(--line);background:#fff}
 </style>
@@ -97,27 +109,32 @@ footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top
 
 <!-- (i) Passport Size ছবি -->
 <dialog id="d1">
-  <div class="dh"><h2>📸 Passport Size ছবি তৈরি</h2><p>ছবি বেছে নিন, টেনে ও জুম করে ঠিক করুন, তারপর ডাউনলোড করুন।</p></div>
+  <div class="dh"><h2>📸 Passport Size ছবি তৈরি</h2><p>সাইজ: ১.৫ × ১.৯ ইঞ্চি। ছবি দিন, তারপর ক্রপ, ব্যাকগ্রাউন্ড ও আলো ঠিক করুন।</p></div>
   <div class="db">
-    <label class="pick"><input type="file" id="p-file" accept="image/*"><span id="p-pk">ছবি বেছে নিতে এখানে ক্লিক করুন</span></label>
-    <div id="p-box" hidden>
+    <div id="p-src"><div class="srcrow">
+      <button class="big" id="p-gal">🖼️<b>গ্যালারি থেকে</b></button>
+      <button class="big" id="p-cam">📷<b>ক্যামেরা</b></button>
+    </div></div>
+    <div id="p-main" hidden>
       <canvas id="p-cv"></canvas>
-      <p class="hint">ছবির উপর টেনে মুখ ফ্রেমের মাঝখানে আনুন।</p>
-      <label>জুম <input type="range" id="p-zoom" min="1" max="4" step="0.01" value="1"></label>
-      <label>মাপ
-        <select id="p-size">
-          <option value="413x531">পাসপোর্ট সাইজ ৩৫×৪৫ মিমি (৪১৩×৫৩১ px)</option>
-          <option value="300x300">স্কয়ার ৩০০×৩০০ px</option>
-          <option value="300x400">৩০০×৪০০ px</option>
-          <option value="c">কাস্টম (ফর্মে যে মাপ চায়, সেটা দিন)</option>
-        </select>
-      </label>
-      <div class="two" id="p-cust" hidden>
-        <label>প্রস্থ (px)<input type="number" id="p-w" value="300" min="50" max="4000"></label>
-        <label>উচ্চতা (px)<input type="number" id="p-h" value="300" min="50" max="4000"></label>
+      <div class="sz">১.৫ × ১.৯ ইঞ্চি (৪৫০×৫৭০ px)</div>
+      <div class="acts">
+        <button class="abtn" id="p-crop-b">✂️ Crop</button>
+        <button class="abtn" id="p-bg-b">🧹 Background remove</button>
+        <button class="abtn" id="p-lt-b">💡 Light</button>
       </div>
-      <label>সর্বোচ্চ ফাইল সাইজ (KB)<input type="number" id="p-kb" value="100" min="10"></label>
+      <div id="p-lt" hidden><label>আলো <span id="p-lv">০</span><input type="range" id="p-lsl" min="-50" max="50" step="1" value="0"></label></div>
+      <div class="acts"><button class="abtn" id="p-new">🔄 অন্য ছবি</button></div>
     </div>
+    <div id="p-crop" hidden>
+      <canvas id="p-ec"></canvas>
+      <p class="hint">চার কোণার বিন্দু টেনে ফ্রেম ছোট-বড় করুন, ভেতরে টেনে সরান।</p>
+      <div class="acts"><button class="abtn" id="p-rl">↺ ঘোরান</button><button class="abtn" id="p-rr">↻ ঘোরান</button></div>
+      <label>সামান্য কাত ঠিক করুন <span id="p-fv">০°</span><input type="range" id="p-fine" min="-15" max="15" step="0.5" value="0"></label>
+      <div class="acts"><button class="abtn" id="p-cx">বাতিল</button><button class="abtn on" id="p-ok">✓ ঠিক আছে</button></div>
+    </div>
+    <input type="file" id="p-f1" accept="image/*" hidden>
+    <input type="file" id="p-f2" accept="image/*" capture="environment" hidden>
     <div class="row"><button class="pri" id="p-go" disabled>⬇ JPG ডাউনলোড</button><button class="cl" data-close>বন্ধ করুন</button></div>
     <div class="st" id="p-st" role="status"></div>
   </div>
@@ -125,19 +142,13 @@ footer{text-align:center;color:var(--mut);font-size:13px;padding:22px;border-top
 
 <!-- (ii) Voter ID / ওয়্যারিং রিপোর্ট সাইজ -->
 <dialog id="d2">
-  <div class="dh"><h2>🗳️ Voter ID Card / ওয়্যারিং রিপোর্ট Size</h2><p>ছবি বা PDF দিন, নির্দিষ্ট KB-এর মধ্যে ছোট করে নিন।</p></div>
+  <div class="dh"><h2>🗳️ Voter ID Card / ওয়্যারিং রিপোর্ট Size</h2><p>একাধিক ছবি দিলে ২য় ছবিটি ১মটির নিচে বসবে, মাঝে ১ ইঞ্চি ফাঁকা থাকবে। একটি JPG ডাউনলোড হবে।</p></div>
   <div class="db">
-    <label class="pick"><input type="file" id="v-file" accept="image/*,application/pdf,.pdf" multiple><span id="v-pk">ফাইল বেছে নিন (ছবি বা PDF)</span></label>
+    <label class="pick"><input type="file" id="v-file" accept="image/*,application/pdf,.pdf" multiple><span id="v-pk">ছবি বেছে নিন (একাধিক হতে পারে)</span></label>
     <ul class="fl" id="v-fl"></ul>
     <label>লক্ষ্য সাইজ (KB)<input type="number" id="v-kb" value="100" min="10"></label>
     <div class="chips"><button class="chip" data-kb="50">৫০ KB</button><button class="chip" data-kb="100">১০০ KB</button><button class="chip" data-kb="200">২০০ KB</button><button class="chip" data-kb="500">৫০০ KB</button></div>
-    <label>আউটপুট
-      <select id="v-out">
-        <option value="jpg">JPG ছবি (প্রতিটি পেজ আলাদা, প্রতিটি লক্ষ্য সাইজের মধ্যে)</option>
-        <option value="pdf">একটি PDF (সব পেজ একসাথে, মোট লক্ষ্য সাইজের মধ্যে)</option>
-      </select>
-    </label>
-    <div class="row"><button class="pri" id="v-go">ছোট করুন</button><button class="cl" data-close>বন্ধ করুন</button></div>
+    <div class="row"><button class="pri" id="v-go">JPG বানান</button><button class="cl" data-close>বন্ধ করুন</button></div>
     <div class="st" id="v-st" role="status"></div>
   </div>
 </dialog>
@@ -185,27 +196,11 @@ document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e =
 // ---- কার্ড ----
 $('#c1').onclick = () => { track('palli_open', {tool:'passport'}); $('#d1').showModal(); };
 $('#c2').onclick = () => { track('palli_open', {tool:'voter_size'}); $('#d2').showModal(); };
-$('#c3').onclick = () => { track('palli_open', {tool:'protyayon_pdf'}); const fr = $('#ifr'); if(!fr.getAttribute('src')) fr.src = 'scan-to-pdf.html'; $('#ifd').showModal(); };
+$('#c3').onclick = () => { track('palli_open', {tool:'protyayon_pdf'}); const fr = $('#ifr'); if(!fr.getAttribute('src')) fr.src = 'scan-to-pdf.html?cert=1'; $('#ifd').showModal(); };
 $('#ifc').onclick = () => $('#ifd').close();
 
 // ---- বাজেটে ফিট করার ফাংশন ----
-// (ক) মাপ ঠিক রেখে শুধু কোয়ালিটি কমিয়ে (পাসপোর্ট ছবির জন্য)
-async function fitQ(c, max){
-  let cur = c, note = '';
-  for(let t = 0; t < 6; t++){
-    const top = await toJpg(cur, .95); if(top.size <= max) return {blob:top, c:cur, note};
-    const low = await toJpg(cur, .3);
-    if(low.size <= max){
-      let lo = .3, hi = .95, best = low;
-      for(let i = 0; i < 6; i++){ const m = (lo+hi)/2, bm = await toJpg(cur, m); if(bm.size <= max){ best = bm; lo = m; } else hi = m; }
-      return {blob:best, c:cur, note};
-    }
-    const n = cnv(cur.width*.88, cur.height*.88); n.getContext('2d').drawImage(cur, 0, 0, n.width, n.height); cur = n;
-    note = '⚠️ সাইজ মেলাতে ছবির মাপ কিছুটা ছোট করা হয়েছে ('+cur.width+'×'+cur.height+' px)';
-  }
-  return {blob:await toJpg(cur, .3), c:cur, note};
-}
-// (খ) কোয়ালিটি ও মাপ দুটোই কমিয়ে (ডকুমেন্টের জন্য)
+// কোয়ালিটি ও মাপ কমিয়ে নির্দিষ্ট সাইজে আনা
 async function fitDim(base, budget, dim0){
   const QMIN = .4, HI = .85; let dim = Math.min(dim0, Math.max(base.width, base.height)), best = null;
   for(let t = 0; t < 14; t++){
@@ -223,49 +218,191 @@ async function fitDim(base, budget, dim0){
   return best;
 }
 
-// ================= (i) Passport Size ছবি =================
-const P = {img:null, W:413, H:531, zoom:1, ox:0, oy:0};
-function pDims(){
-  const v = $('#p-size').value; $('#p-cust').hidden = v !== 'c';
-  let W, H;
-  if(v === 'c'){ W = +$('#p-w').value; H = +$('#p-h').value; } else [W, H] = v.split('x').map(Number);
-  P.W = Math.min(4000, Math.max(50, W || 300)); P.H = Math.min(4000, Math.max(50, H || 300));
+// ================= (i) Passport Size ছবি (১.৫ × ১.৯ ইঞ্চি) =================
+const AR = 1.9/1.5, WW = 900, WH = 1140, OW = 450, OH = 570, BGC = '#afebfa';
+const TFURL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+const S = {src:null, r90:0, fine:0, R:null, rect:null, cropped:null, cut:null, cutOn:false, light:0};
+const show = (id, on) => { $(id).hidden = !on; };
+function rot(src, deg){
+  const r = deg*Math.PI/180, s = Math.abs(Math.sin(r)), c = Math.abs(Math.cos(r));
+  const w = Math.round(src.width*c + src.height*s), h = Math.round(src.width*s + src.height*c);
+  const o = cnv(w, h), x = o.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+  x.translate(w/2, h/2); x.rotate(r); x.drawImage(src, -src.width/2, -src.height/2); return o;
 }
-function pDraw(cv, k){
-  const {img, W, H} = P; cv.width = Math.round(W*k); cv.height = Math.round(H*k);
-  const c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height);
-  const iw = img.naturalWidth, ih = img.naturalHeight, sc = Math.max(W/iw, H/ih)*P.zoom, w = iw*sc, h = ih*sc;
-  const mx = (w-W)/2, my = (h-H)/2;
-  P.ox = Math.max(-mx, Math.min(mx, P.ox)); P.oy = Math.max(-my, Math.min(my, P.oy));
-  c.drawImage(img, ((W-w)/2 + P.ox)*k, ((H-h)/2 + P.oy)*k, w*k, h*k);
+const rebuildR = () => { S.R = rot(S.src, S.r90 + S.fine); };
+function defRect(){ const R = S.R, w = Math.min(R.width, R.height/AR); S.rect = {x:(R.width-w)/2, y:(R.height-w*AR)*.35, w}; }
+function clampRect(){
+  const R = S.R, r = S.rect, maxW = Math.min(R.width, R.height/AR), minW = Math.min(maxW, Math.max(40, maxW*.15));
+  r.w = Math.min(maxW, Math.max(minW, r.w));
+  r.x = Math.min(R.width - r.w, Math.max(0, r.x)); r.y = Math.min(R.height - r.w*AR, Math.max(0, r.y));
 }
-function pPreview(){ if(P.img) pDraw($('#p-cv'), Math.min(1, 320/P.W, 420/P.H)); }
-$('#p-file').onchange = async e => {
+function applyCrop(){
+  const {x, y, w} = S.rect, c = cnv(WW, WH), g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, WW, WH);
+  g.imageSmoothingQuality = 'high'; g.drawImage(S.R, x, y, w, w*AR, 0, 0, WW, WH); S.cropped = c; S.cut = null;
+}
+function applyLight(c, L){
+  if(!L) return c;
+  const g = Math.pow(2, -L/50), t = new Uint8Array(256); for(let i = 0; i < 256; i++) t[i] = Math.round(255*Math.pow(i/255, g));
+  const id = c.getContext('2d').getImageData(0, 0, c.width, c.height), d = id.data;
+  for(let i = 0; i < d.length; i += 4){ d[i] = t[d[i]]; d[i+1] = t[d[i+1]]; d[i+2] = t[d[i+2]]; }
+  const o = cnv(c.width, c.height); o.getContext('2d').putImageData(id, 0, 0); return o;
+}
+function compose(){
+  const useCut = S.cutOn && S.cut, o = cnv(WW, WH), g = o.getContext('2d');
+  g.fillStyle = useCut ? BGC : '#fff'; g.fillRect(0, 0, WW, WH);
+  g.drawImage(applyLight(useCut ? S.cut : S.cropped, S.light), 0, 0); return o;
+}
+function pRender(){ if(!S.cropped) return; const v = $('#p-cv'); v.width = 300; v.height = 380; const g = v.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(compose(), 0, 0, 300, 380); }
+function pLoaded(img){
+  const k = Math.min(1, 2000/Math.max(img.naturalWidth, img.naturalHeight)), c = cnv(img.naturalWidth*k, img.naturalHeight*k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  Object.assign(S, {src:c, r90:0, fine:0, cut:null, cutOn:false, light:0});
+  $('#p-lsl').value = 0; $('#p-lv').textContent = '০'; show('#p-lt', false);
+  $('#p-bg-b').classList.remove('on'); $('#p-bg-b').textContent = '🧹 Background remove';
+  rebuildR(); defRect(); applyCrop(); show('#p-src', false); show('#p-crop', false); show('#p-main', true);
+  $('#p-go').disabled = false; st('#p-st', ''); pRender();
+}
+async function pPick(e){
   const f = e.target.files[0]; e.target.value = ''; if(!f) return;
-  try { P.img = await loadImg(f); } catch(x){ return st('#p-st', esc(x.message), 'err'); }
-  P.zoom = 1; P.ox = P.oy = 0; $('#p-zoom').value = 1; pDims();
-  $('#p-box').hidden = false; $('#p-go').disabled = false; $('#p-pk').textContent = 'অন্য ছবি বেছে নিন';
-  st('#p-st', ''); pPreview();
-};
-['#p-size', '#p-w', '#p-h'].forEach(s => $(s).addEventListener(s === '#p-size' ? 'change' : 'input', () => { pDims(); P.ox = P.oy = 0; pPreview(); }));
-$('#p-zoom').oninput = e => { P.zoom = +e.target.value; pPreview(); };
-{
-  const cv = $('#p-cv'); let drag = null;
-  cv.onpointerdown = e => { drag = {x:e.clientX, y:e.clientY}; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; };
-  cv.onpointermove = e => {
-    if(!drag) return; const f = P.W/cv.getBoundingClientRect().width;
-    P.ox += (e.clientX-drag.x)*f; P.oy += (e.clientY-drag.y)*f; drag = {x:e.clientX, y:e.clientY}; pPreview();
-  };
-  cv.onpointerup = cv.onpointercancel = () => { drag = null; cv.style.cursor = 'grab'; };
-  cv.onwheel = e => { e.preventDefault(); const z = $('#p-zoom'); z.value = Math.min(4, Math.max(1, +z.value + (e.deltaY < 0 ? .1 : -.1))); P.zoom = +z.value; pPreview(); };
+  try { pLoaded(await loadImg(f)); } catch(x){ st('#p-st', esc(x.message), 'err'); }
 }
-$('#p-go').onclick = async () => {
-  if(!P.img) return; const b = $('#p-go'); b.disabled = true; st('#p-st', 'প্রসেস হচ্ছে…');
+$('#p-gal').onclick = () => $('#p-f1').click(); $('#p-cam').onclick = () => $('#p-f2').click();
+$('#p-f1').onchange = pPick; $('#p-f2').onchange = pPick;
+$('#p-new').onclick = () => { show('#p-main', false); show('#p-src', true); };
+
+// ---- আলো ----
+$('#p-lt-b').onclick = () => { const o = $('#p-lt').hidden; show('#p-lt', o); $('#p-lt-b').classList.toggle('on', o); };
+$('#p-lsl').oninput = e => { S.light = +e.target.value; $('#p-lv').textContent = (S.light > 0 ? '+' : '')+S.light.toLocaleString('bn-BD'); pRender(); };
+
+// ---- Background remove ----
+let segP = null;
+function getSeg(){
+  if(segP) return segP;
+  segP = (async () => {
+    const TF = await import(TFURL), mk = d => TF.pipeline('background-removal', 'Xenova/modnet', {device:d, dtype:'fp32'});
+    try { return await mk(navigator.gpu ? 'webgpu' : 'wasm'); } catch(e){ if(navigator.gpu) return await mk('wasm'); throw e; }
+  })();
+  segP.catch(() => { segP = null; });
+  return segP;
+}
+async function aiCut(c){
+  const seg = await getSeg(), blob = await new Promise(r => c.toBlob(r, 'image/png')), url = URL.createObjectURL(blob);
   try {
-    pDims(); const full = cnv(P.W, P.H); pDraw(full, 1);
-    const r = await fitQ(full, Math.max(10, +$('#p-kb').value || 100)*1024);
-    dl(r.blob, 'passport-photo-'+r.c.width+'x'+r.c.height+'.jpg'); track('palli_done', {tool:'passport'});
-    st('#p-st', '🎉 সম্পন্ন! JPG ডাউনলোড হয়েছে ('+r.c.width+'×'+r.c.height+' px, '+kbs(r.blob.size)+')।'+(r.note ? '<br><small>'+r.note+'</small>' : ''), 'ok');
+    const im = (await seg(url))[0], ch = im.channels, n = c.width*c.height;
+    if(im.width !== c.width || im.height !== c.height || ch < 1) throw new Error('মাস্কের মাপ মেলেনি');
+    const o = cnv(c.width, c.height), g = o.getContext('2d'); g.drawImage(c, 0, 0);
+    const id = g.getImageData(0, 0, o.width, o.height), d = id.data;
+    for(let i = 0; i < n; i++){ const a = im.data[i*ch + (ch === 4 ? 3 : 0)]; d[i*4+3] = a < 12 ? 0 : (a > 243 ? 255 : a); }
+    g.putImageData(id, 0, 0); return o;
+  } finally { URL.revokeObjectURL(url); }
+}
+// AI মডেল না চললে: একরঙা ব্যাকগ্রাউন্ডের জন্য সাধারণ পদ্ধতি
+function simpleCut(c){
+  const W = c.width, H = c.height, g = c.getContext('2d'), id = g.getImageData(0, 0, W, H), d = id.data, m = Math.max(2, Math.round(W*.03));
+  const rs = [], gs = [], bs = [];
+  for(let y = 0; y < H; y += 3) for(let x = 0; x < W; x += 3) if(x < m || x >= W-m || y < m || y >= H-m){ const i = (y*W+x)*4; rs.push(d[i]); gs.push(d[i+1]); bs.push(d[i+2]); }
+  const med = a => a.sort((p, q) => p-q)[a.length >> 1], br = med(rs), bg = med(gs), bb = med(bs);
+  const near = p => { const i = p*4, a = d[i]-br, b = d[i+1]-bg, e = d[i+2]-bb; return a*a+b*b+e*e < 3600; };
+  const vis = new Uint8Array(W*H), st = [];
+  for(let x = 0; x < W; x++) for(const y of [0, H-1]){ const p = y*W+x; if(!vis[p] && near(p)){ vis[p] = 1; st.push(p); } }
+  for(let y = 0; y < H; y++) for(const x of [0, W-1]){ const p = y*W+x; if(!vis[p] && near(p)){ vis[p] = 1; st.push(p); } }
+  while(st.length){
+    const p = st.pop(), x = p % W, y = (p-x)/W;
+    if(x > 0 && !vis[p-1] && near(p-1)){ vis[p-1] = 1; st.push(p-1); }
+    if(x < W-1 && !vis[p+1] && near(p+1)){ vis[p+1] = 1; st.push(p+1); }
+    if(y > 0 && !vis[p-W] && near(p-W)){ vis[p-W] = 1; st.push(p-W); }
+    if(y < H-1 && !vis[p+W] && near(p+W)){ vis[p+W] = 1; st.push(p+W); }
+  }
+  let a = new Float32Array(W*H); for(let i = 0; i < a.length; i++) a[i] = vis[i] ? 0 : 255;
+  for(let pass = 0; pass < 2; pass++){
+    const t = new Float32Array(a.length);
+    for(let y = 0; y < H; y++) for(let x = 0; x < W; x++){ let s = 0, k = 0; for(let u = -2; u <= 2; u++){ const xx = x+u; if(xx >= 0 && xx < W){ s += a[y*W+xx]; k++; } } t[y*W+x] = s/k; }
+    for(let y = 0; y < H; y++) for(let x = 0; x < W; x++){ let s = 0, k = 0; for(let u = -2; u <= 2; u++){ const yy = y+u; if(yy >= 0 && yy < H){ s += t[yy*W+x]; k++; } } a[y*W+x] = s/k; }
+  }
+  for(let i = 0; i < a.length; i++) d[i*4+3] = Math.round(a[i]);
+  const o = cnv(W, H); o.getContext('2d').putImageData(id, 0, 0); return o;
+}
+async function doBg(){
+  const b = $('#p-bg-b'); b.disabled = true; let note = '';
+  try {
+    st('#p-st', segP ? 'Background সরানো হচ্ছে…' : 'Background সরানো হচ্ছে… (প্রথমবার AI মডেল নামছে, প্রায় ২৫ MB, একটু সময় লাগবে)');
+    try { S.cut = await aiCut(S.cropped); }
+    catch(e){ console.warn('AI cut failed', e); S.cut = simpleCut(S.cropped); note = '<br><small>⚠️ AI মডেল লোড হয়নি (ইন্টারনেট দেখুন), তাই সাধারণ পদ্ধতিতে করা হয়েছে। সাদা বা একরঙা ব্যাকগ্রাউন্ডে ভালো কাজ করে।</small>'; }
+    S.cutOn = true; b.classList.add('on'); b.textContent = '✓ Background সরানো হয়েছে'; pRender();
+    st('#p-st', '✅ Background বদলে হালকা নীল (#afebfa) হয়েছে।'+note, 'ok');
+  } catch(e){ console.error(e); st('#p-st', 'ত্রুটি: '+esc(e.message || e), 'err'); }
+  b.disabled = false;
+}
+$('#p-bg-b').onclick = () => {
+  if(!S.cropped) return;
+  if(S.cut){ S.cutOn = !S.cutOn; const b = $('#p-bg-b'); b.classList.toggle('on', S.cutOn); b.textContent = S.cutOn ? '✓ Background সরানো হয়েছে' : '🧹 Background remove'; st('#p-st', ''); pRender(); }
+  else doBg();
+};
+
+// ---- Crop ----
+const E = {k:1, mode:null, a:null, bak:null, last:null};
+function eDraw(){
+  const R = S.R, k = E.k = Math.min(340/R.width, 420/R.height), cv = $('#p-ec');
+  cv.width = Math.round(R.width*k); cv.height = Math.round(R.height*k);
+  const g = cv.getContext('2d'), r = S.rect, x = r.x*k, y = r.y*k, w = r.w*k, h = r.w*AR*k;
+  g.drawImage(R, 0, 0, cv.width, cv.height);
+  g.save(); g.fillStyle = 'rgba(0,0,0,.5)'; g.beginPath(); g.rect(0, 0, cv.width, cv.height); g.rect(x, y, w, h); g.fill('evenodd'); g.restore();
+  g.strokeStyle = '#fff'; g.lineWidth = 2; g.strokeRect(x, y, w, h);
+  g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,.45)'; g.beginPath();
+  for(let i = 1; i < 3; i++){ g.moveTo(x+w*i/3, y); g.lineTo(x+w*i/3, y+h); g.moveTo(x, y+h*i/3); g.lineTo(x+w, y+h*i/3); } g.stroke();
+  for(const [cx, cy] of [[x, y], [x+w, y], [x, y+h], [x+w, y+h]]){ g.beginPath(); g.arc(cx, cy, 10, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 3; g.strokeStyle = '#2f4fd8'; g.stroke(); }
+}
+// px, py = ছবির (ঘোরানো) কোঅর্ডিনেট
+function eDown(px, py){
+  const r = S.rect, k = E.k, h = r.w*AR;
+  for(const [l, t] of [[1, 1], [0, 1], [1, 0], [0, 0]]){
+    const cx = r.x + (l ? 0 : r.w), cy = r.y + (t ? 0 : h);
+    if(Math.hypot((px-cx)*k, (py-cy)*k) < 28){ E.mode = {type:'size', l, t, ax:r.x + (l ? r.w : 0), ay:r.y + (t ? h : 0)}; return true; }
+  }
+  if(px >= r.x && px <= r.x+r.w && py >= r.y && py <= r.y+h){ E.mode = {type:'move'}; E.last = [px, py]; return true; }
+  return false;
+}
+function eMove(px, py){
+  const m = E.mode, R = S.R, r = S.rect; if(!m) return;
+  if(m.type === 'move'){ r.x += px-E.last[0]; r.y += py-E.last[1]; E.last = [px, py]; clampRect(); }
+  else {
+    const w0 = m.l ? m.ax-px : px-m.ax, h0 = m.t ? m.ay-py : py-m.ay;
+    const maxW = Math.min(m.l ? m.ax : R.width-m.ax, m.t ? m.ay/AR : (R.height-m.ay)/AR);
+    const minW = Math.min(maxW, Math.max(40, Math.min(R.width, R.height/AR)*.15));
+    r.w = Math.min(maxW, Math.max(minW, Math.max(w0, h0/AR)));
+    r.x = m.l ? m.ax-r.w : m.ax; r.y = m.t ? m.ay-r.w*AR : m.ay;
+  }
+  eDraw();
+}
+const eUp = () => { E.mode = null; };
+{
+  const cv = $('#p-ec'), pt = e => { const b = cv.getBoundingClientRect(); return [(e.clientX-b.left)*S.R.width/b.width, (e.clientY-b.top)*S.R.height/b.height]; };
+  cv.onpointerdown = e => { if(eDown(...pt(e))){ cv.setPointerCapture(e.pointerId); e.preventDefault(); } };
+  cv.onpointermove = e => { if(E.mode) eMove(...pt(e)); };
+  cv.onpointerup = cv.onpointercancel = eUp;
+}
+function eOpen(){
+  if(!S.src) return; E.bak = {r90:S.r90, fine:S.fine, rect:{...S.rect}};
+  $('#p-fine').value = S.fine; $('#p-fv').textContent = S.fine+'°'; rebuildR(); clampRect();
+  show('#p-main', false); show('#p-crop', true); eDraw();
+}
+$('#p-crop-b').onclick = eOpen;
+const eRot = d => { S.r90 = (S.r90 + d + 360) % 360; rebuildR(); defRect(); eDraw(); };
+$('#p-rl').onclick = () => eRot(-90); $('#p-rr').onclick = () => eRot(90);
+$('#p-fine').oninput = e => { S.fine = +e.target.value; $('#p-fv').textContent = S.fine+'°'; rebuildR(); defRect(); eDraw(); };
+$('#p-cx').onclick = () => { Object.assign(S, {r90:E.bak.r90, fine:E.bak.fine, rect:E.bak.rect}); rebuildR(); show('#p-crop', false); show('#p-main', true); };
+$('#p-ok').onclick = async () => {
+  const wasOn = S.cutOn; applyCrop(); S.cutOn = false;
+  const b = $('#p-bg-b'); b.classList.remove('on'); b.textContent = '🧹 Background remove';
+  show('#p-crop', false); show('#p-main', true); pRender(); st('#p-st', '');
+  if(wasOn) await doBg();
+};
+$('#p-go').onclick = async () => {
+  if(!S.cropped) return; const b = $('#p-go'); b.disabled = true; st('#p-st', 'প্রসেস হচ্ছে…');
+  try {
+    const f = cnv(OW, OH), g = f.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(compose(), 0, 0, OW, OH);
+    const blob = await toJpg(f, .92); dl(blob, 'passport-photo-1.5x1.9in.jpg'); track('palli_done', {tool:'passport'});
+    st('#p-st', '🎉 সম্পন্ন! JPG ডাউনলোড হয়েছে ('+OW+'×'+OH+' px = ১.৫×১.৯ ইঞ্চি, '+kbs(blob.size)+')।', 'ok');
   } catch(e){ console.error(e); st('#p-st', 'ত্রুটি: '+esc(e.message || e), 'err'); }
   b.disabled = false;
 };
@@ -273,11 +410,15 @@ $('#p-go').onclick = async () => {
 // ================= (ii) Voter ID / ওয়্যারিং রিপোর্ট সাইজ =================
 let vFiles = [];
 function vList(){
-  $('#v-fl').innerHTML = vFiles.map((f, i) => `<li><span>${esc(f.name)} <small>${kbs(f.size)}</small></span><button data-i="${i}" aria-label="বাদ দিন">✕</button></li>`).join('');
-  $('#v-pk').textContent = vFiles.length ? '+ আরও ফাইল যোগ করুন' : 'ফাইল বেছে নিন (ছবি বা PDF)';
+  $('#v-fl').innerHTML = vFiles.map((f, i) => `<li><span>${i+1}. ${esc(f.name)} <small>${kbs(f.size)}</small></span><button data-a="u" data-i="${i}" aria-label="উপরে">↑</button><button data-a="d" data-i="${i}" aria-label="নিচে">↓</button><button data-a="x" data-i="${i}" aria-label="বাদ দিন">✕</button></li>`).join('');
+  $('#v-pk').textContent = vFiles.length ? '+ আরও ছবি যোগ করুন' : 'ছবি বেছে নিন (একাধিক হতে পারে)';
 }
 $('#v-file').onchange = e => { vFiles = [...vFiles, ...e.target.files]; e.target.value = ''; vList(); st('#v-st', ''); };
-$('#v-fl').onclick = e => { const b = e.target.closest('button'); if(!b) return; vFiles.splice(+b.dataset.i, 1); vList(); };
+$('#v-fl').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return; const i = +b.dataset.i, a = b.dataset.a;
+  if(a === 'x') vFiles.splice(i, 1); else { const j = a === 'u' ? i-1 : i+1; if(j >= 0 && j < vFiles.length) [vFiles[i], vFiles[j]] = [vFiles[j], vFiles[i]]; }
+  vList();
+};
 document.querySelectorAll('.chip').forEach(b => b.onclick = () => { $('#v-kb').value = b.dataset.kb; });
 async function vPages(f){
   const out = [], base = f.name.replace(/\.[^.]+$/, '');
@@ -287,8 +428,7 @@ async function vPages(f){
     for(let i = 1; i <= n; i++){
       const pg = await doc.getPage(i), v0 = pg.getViewport({scale:1}), s = Math.min(2.5, 1800/Math.max(v0.width, v0.height)), v = pg.getViewport({scale:s});
       const c = cnv(v.width, v.height), x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
-      await pg.render({canvasContext:x, viewport:v}).promise;
-      out.push({name: base + (doc.numPages > 1 ? '-p'+i : ''), c});
+      await pg.render({canvasContext:x, viewport:v}).promise; out.push({name: base + (doc.numPages > 1 ? '-p'+i : ''), c});
     }
   } else {
     const im = await loadImg(f), k = Math.min(1, 2400/Math.max(im.naturalWidth, im.naturalHeight));
@@ -297,33 +437,26 @@ async function vPages(f){
   }
   return out;
 }
+// একাধিক ছবি: A4 প্রস্থের (৮.২৭ ইঞ্চি, ১৫০ dpi) সাদা পেজে উপর থেকে নিচে, মাঝে ১ ইঞ্চি ফাঁকা
+const DPI = 150, PGW = 1240, MARG = 75, GAP = 150;  // ১২৪০px = ৮.২৭ ইঞ্চি (A4 প্রস্থ), ৭৫px = আধা ইঞ্চি, ১৫০px = ১ ইঞ্চি
+function stack(pages){
+  const iw = PGW - 2*MARG, hs = pages.map(p => Math.round(p.c.height*iw/p.c.width));
+  const H = MARG*2 + hs.reduce((a, b) => a+b, 0) + GAP*(pages.length-1), o = cnv(PGW, H), g = o.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, PGW, H); g.imageSmoothingQuality = 'high';
+  let y = MARG; pages.forEach((p, i) => { g.drawImage(p.c, MARG, y, iw, hs[i]); y += hs[i] + GAP; });
+  return o;
+}
 $('#v-go').onclick = async () => {
-  if(!vFiles.length) return st('#v-st', 'আগে ফাইল বেছে নিন।', 'err');
+  if(!vFiles.length) return st('#v-st', 'আগে ছবি বেছে নিন।', 'err');
   const btn = $('#v-go'); btn.disabled = true;
   try {
     const kb = Math.max(10, +$('#v-kb').value || 100), pages = [];
     for(const f of vFiles){ st('#v-st', esc(f.name)+' পড়া হচ্ছে…'); pages.push(...await vPages(f)); }
-    const n = pages.length, res = []; let over = false;
-    if($('#v-out').value === 'pdf'){
-      await need(PDFLIB); const doc = await PDFLib.PDFDocument.create(), budget = Math.max(6000, (kb*1024 - 2000 - 700*n)/n);
-      for(const [i, p] of pages.entries()){
-        st('#v-st', 'পেজ '+(i+1)+'/'+n+' প্রসেস হচ্ছে…');
-        const r = await fitDim(p.c, budget, 1600), im = await doc.embedJpg(await r.blob.arrayBuffer()), W = 595, H = Math.round(W*r.c.height/r.c.width);
-        doc.addPage([W, H]).drawImage(im, {x:0, y:0, width:W, height:H});
-      }
-      const blob = new Blob([await doc.save()], {type:'application/pdf'}); over = blob.size > kb*1024*1.1;
-      res.push({name:'document-'+kb+'kb.pdf', blob});
-    } else {
-      for(const [i, p] of pages.entries()){
-        st('#v-st', 'ছবি '+(i+1)+'/'+n+' প্রসেস হচ্ছে…');
-        const r = await fitDim(p.c, kb*1024, 1600); if(r.blob.size > kb*1024*1.05) over = true;
-        res.push({name: p.name+'-'+kb+'kb.jpg', blob:r.blob});
-      }
-    }
-    if(res.length === 1) dl(res[0].blob, res[0].name);
-    track('palli_done', {tool:'voter_size'});
-    const links = res.map(r => `<a class="dlk" href="${URL.createObjectURL(r.blob)}" download="${esc(r.name)}">⬇ ${esc(r.name)} (${kbs(r.blob.size)})</a>`).join('');
-    st('#v-st', '🎉 সম্পন্ন!'+(res.length === 1 ? ' ডাউনলোড হয়েছে।' : ' নিচের বাটনে চেপে ডাউনলোড করুন।')+(over ? '<br><small>⚠️ লক্ষ্য সাইজে পুরোপুরি পৌঁছানো যায়নি; বড় KB বা কম পেজ দিয়ে চেষ্টা করুন।</small>' : '')+'<div class="dls">'+links+'</div>', 'ok');
+    st('#v-st', 'সাইজ ঠিক করা হচ্ছে…');
+    const page = pages.length > 1 ? stack(pages) : pages[0].c, r = await fitDim(page, kb*1024, Math.max(page.width, page.height, 1600));
+    const name = pages.length > 1 ? 'voter-id-'+pages.length+'-images.jpg' : pages[0].name+'-'+kb+'kb.jpg';
+    dl(r.blob, name); track('palli_done', {tool:'voter_size'});
+    st('#v-st', '🎉 সম্পন্ন! JPG ডাউনলোড হয়েছে ('+r.c.width+'×'+r.c.height+' px, '+kbs(r.blob.size)+')।'+(r.blob.size > kb*1024*1.05 ? '<br><small>⚠️ লক্ষ্য সাইজে পুরোপুরি পৌঁছানো যায়নি; বড় KB দিয়ে চেষ্টা করুন।</small>' : '')+'<div class="dls"><a class="dlk" href="'+URL.createObjectURL(r.blob)+'" download="'+esc(name)+'">⬇ আবার ডাউনলোড</a></div>', 'ok');
   } catch(e){ console.error(e); st('#v-st', 'ত্রুটি: '+esc(e.message || e), 'err'); }
   btn.disabled = false;
 };

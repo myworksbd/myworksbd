@@ -7,6 +7,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='12' fill='%232f4fd8'/%3E%3Cpath d='M14 9h14l8 8v22a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z' fill='%23fff'/%3E%3Cpath d='M28 9v6a2 2 0 0 0 2 2h6z' fill='%23b9c6f5'/%3E%3Cpath d='M18 30l4 4 8-9' stroke='%23f5a623' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2MPXSDJBBS"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2MPXSDJBBS');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#1c2233;--mut:#5d6579;--line:#e3e6ee;--brand:#2f4fd8}
 *{box-sizing:border-box}
@@ -22,6 +24,11 @@ h1{margin:0;font-size:28px}.sub{margin:6px 0 18px;color:var(--mut)}
 .big{background:#fff;border:2px dashed #9fb2d6;border-radius:14px;padding:30px 10px;font:inherit;font-size:34px;cursor:pointer;color:var(--ink)}
 .big b{display:block;font-size:16px;margin-top:6px}
 .big:hover{border-color:var(--brand)}
+.srcrow.three{grid-template-columns:repeat(3,1fr);gap:8px}.srcrow.three .big{padding:24px 4px;font-size:30px}.srcrow.three .big b{font-size:15px}
+#cf{width:min(520px,94vw);max-height:94vh;overflow:auto}#cf label{display:block;margin-top:10px;font-size:14px;font-weight:600}
+#cf input,#cf select{display:block;width:100%;margin-top:4px;padding:9px 10px;border:1px solid #c8cddd;border-radius:8px;font:inherit;background:#fff}
+#cf .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}#cf details{margin-top:12px;font-size:14px}#cf summary{cursor:pointer;color:var(--mut)}
+#cf .hint{margin:6px 0 0;font-size:13px;color:var(--mut)}#cf .row{margin-top:16px}
 .pg{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:14px}
 .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .ph button{border:0;background:#eef0f7;border-radius:8px;width:34px;height:34px;margin-left:6px;cursor:pointer;font-size:16px}
@@ -51,15 +58,17 @@ dialog::backdrop{background:rgba(15,20,40,.55)}
   </a>
 </div></div>
 <main>
-  <h1>📷 Image to PDF</h1>
-  <p class="sub">ছবি তুলুন বা গ্যালারি থেকে নিন, সোজা ও উজ্জ্বল করে PDF বানান। ছবি কোথাও আপলোড হয় না।</p>
+  <h1 id="ttl">📷 Image to PDF</h1>
+  <p class="sub" id="sub">ছবি তুলুন বা গ্যালারি থেকে নিন, সোজা ও উজ্জ্বল করে PDF বানান। ছবি কোথাও আপলোড হয় না।</p>
   <div class="srcrow" id="start">
     <button class="big" data-s="gal">🖼️<b>গ্যালারি থেকে</b></button>
     <button class="big" data-s="cam">📷<b>ক্যামেরা</b></button>
+    <button class="big" id="cert-b" hidden>📝<b>প্রত্যয়ন</b></button>
   </div>
   <div id="pages"></div>
   <div id="bar" hidden>
     <button class="btn" id="add">➕ Add image</button>
+    <button class="btn" id="cert-b2" hidden>📝 প্রত্যয়ন</button>
     <select id="qs" class="btn" aria-label="PDF সাইজ" style="padding:10px 8px"><option value="s" selected>📉 ছোট (~১০০ KB)</option><option value="m">⚖️ মাঝারি (~২০০ KB)</option><option value="h">🖼️ সেরা মান (~৫০০ KB)</option><option value="x">💎 সবচেয়ে সেরা (~১০ MB)</option></select>
     <button class="btn pri" id="mk">📄 PDF করুন</button>
   </div>
@@ -73,6 +82,22 @@ dialog::backdrop{background:rgba(15,20,40,.55)}
     <button class="big" data-s="cam">📷<b>ক্যামেরা</b></button>
   </div>
   <button class="btn" onclick="this.closest('dialog').close()" style="width:100%">বন্ধ করুন</button>
+</dialog>
+
+<dialog id="cf">
+  <b>📝 প্রত্যয়ন (অনাপত্তি সনদপত্র)</b>
+  <p class="hint">ঘরগুলো পূরণ করুন। ফাঁকা রাখলে সেখানে ফাঁকা দাগ (……) থাকবে, প্রিন্ট করে হাতে লিখতে পারবেন।</p>
+  <label>নাম (যিনি প্রত্যয়ন দিচ্ছেন)<input id="cf-name" autocomplete="off"></label>
+  <label>পিতার নাম<input id="cf-father" autocomplete="off"></label>
+  <label>সাং / গ্রাম<input id="cf-vill" autocomplete="off"></label>
+  <div class="two"><label>উপজেলা<input id="cf-upz" autocomplete="off"></label><label>জেলা<input id="cf-dist" autocomplete="off"></label></div>
+  <div class="two"><label>সম্পর্ক<select id="cf-rel"><option>ছেলে</option><option>মেয়ে</option></select></label><label>ছেলে / মেয়ের নাম<input id="cf-child" autocomplete="off"></label></div>
+  <div class="two"><label>খতিয়ান নং<input id="cf-khot" inputmode="numeric" autocomplete="off"></label><label>দাগ নং<input id="cf-dag" inputmode="numeric" autocomplete="off"></label></div>
+  <details><summary>পল্লী বিদ্যুৎ অফিস (অন্য এলাকা হলে বদলান)</summary>
+    <label>পল্লী বিদ্যুৎ সমিতি<input id="cf-samity" autocomplete="off"></label>
+    <label>জোনাল অফিসের নাম<input id="cf-zone" autocomplete="off"></label>
+  </details>
+  <div class="row"><button class="btn" id="cf-x">বাতিল</button><button class="btn pri" id="cf-ok">✓ প্রত্যয়ন তৈরি করুন</button></div>
 </dialog>
 
 <dialog id="ed">
@@ -133,7 +158,7 @@ function draw(pg){
   const b = pg.base, k = Math.min(1, 800/Math.max(b.width, b.height)), w = Math.round(b.width*k), h = Math.round(b.height*k);
   const t = document.createElement('canvas'); t.width = w; t.height = h; t.getContext('2d').drawImage(b, 0, 0, w, h);
   pg.pv.width = w; pg.pv.height = h; pg.pv.getContext('2d').drawImage(pg.light ? enhance(t) : t, 0, 0);
-  pg.lb.classList.toggle('on', pg.light); pg.lb.textContent = pg.light ? '💡 Light দেওয়া হয়েছে ✓' : '💡 Light দিন';
+  if(pg.lb){ pg.lb.classList.toggle('on', pg.light); pg.lb.textContent = pg.light ? '💡 Light দেওয়া হয়েছে ✓' : '💡 Light দিন'; }
 }
 function renum(){
   pages.forEach((pg, i) => pg.el.querySelector('b').textContent = 'পেজ '+(i+1));
@@ -149,6 +174,7 @@ function addPage(base, file){
     const k = a.dataset.a;
     if(k == 'del'){ el.remove(); pages.splice(pages.indexOf(pg), 1); renum(); }
     else if(k == 'light'){ pg.light = !pg.light; draw(pg); }
+    else if(k == 'cert') openCert();
     else if(k == 'fix') openEd(pg);
     else if(k == 'reset'){ try { pg.base = await load(pg.file); pg.light = false; draw(pg); } catch(err){ msg(err.message, 'err'); } }
   };
@@ -254,6 +280,79 @@ async function jpegFit(base, light, budget, P){
   }
   return best;
 }
+
+
+// ================= প্রত্যয়ন (অনাপত্তি সনদপত্র) =================
+const CERT = new URLSearchParams(location.search).get('cert') === '1';
+const CF = {name:'', father:'', vill:'', upz:'', dist:'', rel:'ছেলে', child:'', khot:'', dag:'', samity:'ময়মনসিংহ পল্লী বিদ্যুৎ সমিতি-১', zone:'ফুলবাড়ীয়া'};
+let certPg = null;
+const FF = '"Noto Sans Bengali","Hind Siliguri","Nirmala UI","Vrinda",system-ui,sans-serif';
+const toBn = s => String(s).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+if(CERT){
+  $('#cert-b').hidden = false; $('#cert-b2').hidden = false; $('#start').classList.add('three');
+  $('#ttl').textContent = '📜 প্রত্যয়ন + PDF তৈরি';
+  $('#sub').textContent = 'প্রত্যয়ন লিখুন, তারপর দলিল বা অন্য কাগজের ছবি যোগ করে একটি PDF বানান। ছবি কোথাও আপলোড হয় না।';
+}
+// এক অনুচ্ছেদ লেখা: দুই পাশ সমান (justify), শেষ লাইন বাদে
+function para(g, text, x0, y, maxW, lh, indent){
+  const words = text.split(/[ \n\t]+/).filter(Boolean), sw = g.measureText(' ').width; let line = [], lw = 0, first = true;
+  const flush = last => {
+    const off = first ? indent : 0, avail = maxW - off; let x = x0 + off;
+    const gap = (!last && line.length > 1) ? (avail - lw)/(line.length-1) : sw;
+    for(const w of line){ g.fillText(w, x, y); x += g.measureText(w).width + gap; }
+    y += lh; first = false; line = []; lw = 0;
+  };
+  for(const w of words){
+    const ww = g.measureText(w).width, off = first ? indent : 0, need = lw + (line.length ? sw*line.length : 0) + ww;
+    if(line.length && need > maxW - off) flush(false);
+    line.push(w); lw += ww;
+  }
+  if(line.length) flush(true);
+  return y;
+}
+function certCanvas(v){
+  const W = 1240, H = 1754, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'), blank = '……………', f = x => (x || '').trim() || blank, fn = x => toBn((x || '').trim()) || blank;
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.fillStyle = '#000'; g.textBaseline = 'alphabetic';
+  const T = 'অনাপত্তি সনদপত্র'; g.font = '700 66px '+FF; g.textAlign = 'center'; g.fillText(T, W/2, 232);
+  const tw = g.measureText(T).width; g.fillRect(W/2 - tw/2, 252, tw, 5);
+  const rel = v.rel === 'মেয়ে' ? 'মেয়ে' : 'ছেলে', samity = f(v.samity), zone = f(v.zone);
+  const p1 = 'এই মর্মে প্রত্যয়ন করা যাইতেছে যে, আমি '+f(v.name)+', পিতা - '+f(v.father)+', গ্রাম - '+f(v.vill)+', উপজেলা- '+f(v.upz)+', জেলা- '+f(v.dist)+'। আমার '+rel+' '+f(v.child)+', আলাদাভাবে ঘর সংসার করায় তার সুবিধার্থে '+samity+' এর আওতাধীন '+zone+' জোনাল অফিসে একটি আলাদা মিটার নিতে আগ্রহী। এতে বাসগৃহের জমিতে তার বসবাসের জন্য নির্মিত ঘরে আলাদা মিটার সংযোগ নিলে আমার কোন আপত্তি নাই। উক্ত জমির খতিয়ান\u00A0নং\u00A0'+fn(v.khot)+', দাগ\u00A0নং\u00A0'+fn(v.dag)+'।';
+  const p2 = 'আমি আমার '+rel+'র সুখ, সমৃদ্ধি ও শান্তি কামনা করছি।';
+  g.font = '400 29px '+FF; g.textAlign = 'left';
+  let y = para(g, p1, 148, 380, 944, 54, 0) + 22;
+  y = para(g, p2, 148, y, 944, 54, 48);
+  g.textAlign = 'center'; const cx = 880; y += 150;
+  for(const t of [f(v.name), f(v.vill), f(v.upz)+', '+f(v.dist)+'।']){ g.fillText(t, cx, y); y += 46; }
+  return c;
+}
+async function ensureFont(){
+  try {
+    await Promise.race([Promise.all([document.fonts.load('700 66px "Noto Sans Bengali"', 'অনাপত্তি সনদপত্র'), document.fonts.load('400 29px "Noto Sans Bengali"', 'এই মর্মে প্রত্যয়ন')]), new Promise(r => setTimeout(r, 4000))]);
+  } catch(e){}
+}
+function openCert(){
+  for(const k in CF){ const el = $('#cf-'+k); if(el) el.value = CF[k]; }
+  $('#cf').showModal();
+}
+$('#cert-b').onclick = $('#cert-b2').onclick = openCert;
+$('#cf-x').onclick = () => $('#cf').close();
+$('#cf-ok').onclick = async () => {
+  for(const k in CF){ const el = $('#cf-'+k); if(el) CF[k] = el.value; }
+  const b = $('#cf-ok'); b.disabled = true; b.textContent = 'তৈরি হচ্ছে…';
+  try {
+    await ensureFont(); const cv = certCanvas(CF);
+    if(certPg && pages.includes(certPg)){ certPg.base = cv; draw(certPg); }
+    else {
+      addPage(cv, null); const pg = pages[pages.length-1]; pg.cert = true; pg.lb = null; certPg = pg;
+      pg.el.querySelector('[data-a=reset]').remove();
+      pg.el.querySelector('.acts').innerHTML = '<button class="btn" data-a="cert">✏️ প্রত্যয়ন বদলান</button>';
+      pages.splice(pages.indexOf(pg), 1); pages.unshift(pg); $('#pages').prepend(pg.el); renum();
+    }
+    $('#cf').close(); msg(''); certPg.el.scrollIntoView({behavior:'smooth', block:'start'});
+  } catch(e){ console.error(e); alert('ত্রুটি: '+(e.message||e)); }
+  b.disabled = false; b.textContent = '✓ প্রত্যয়ন তৈরি করুন';
+};
 
 // ---- PDF করুন ----
 $('#mk').onclick = async () => {
